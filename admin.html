@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RK SOFTWARE Admin Panel</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#111;color:#fff;font-family:Arial,sans-serif}
+header{background:#f58220;color:#111;padding:20px;font-size:23px;font-weight:bold}
+nav{display:flex;flex-wrap:wrap;background:#222;padding:10px;gap:8px}
+nav a{color:white;text-decoration:none;padding:10px;background:#333;border-radius:5px}
+main{padding:18px}
+h2{color:#ff8a24}
+.card{background:#222;border:1px solid #444;border-radius:10px;padding:18px;margin:12px 0}
+input,button{padding:12px;width:100%;margin:7px 0;border-radius:6px;border:0}
+button{background:#f58220;color:#111;font-weight:bold}
+</style>
+</head>
+<body>
+<header>RK SOFTWARE — ADMIN PANEL</header>
+<nav>
+<a href="#dashboard">Dashboard</a>
+<a href="#add">Add Tool</a>
+<a href="#edit">Edit Tool</a>
+<a href="#orders">Orders</a>
+<a href="#settings">Settings</a>
+</nav>
+<main>
+<section id="dashboard" class="card">
+<h2>Dashboard</h2>
+<p>Welcome to RK SOFTWARE Admin Panel.</p>
+<p>Total Tools: 0</p>
+<p>Total Orders: 0</p>
+</section>
+<section id="add" class="card">
+<h2>Add New Tool</h2>
+<input placeholder="Tool Name">
+<input placeholder="Tool Price">
+<button type="button">Add Tool (Demo)</button>
+</section>
+<section id="edit" class="card">
+<h2>Edit Tool</h2>
+<p>Tool editing will be connected to the database later.</p>
+</section>
+<section id="orders" class="card">
+<h2>Orders</h2>
+<p>Your customer orders will appear here after backend setup.</p>
+</section>
+<section id="settings" class="card">
+<h2>Settings</h2>
+<p>RK SOFTWARE Website Settings</p>
+</section>
+</main>
+</body>
+</html>
