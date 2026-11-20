@@ -1,193 +1,99 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RK SOFTWARE | Mobile Software Services</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  font-family:Arial,sans-serif;
-  background:#080d18;
-  color:#f4f6ff;
-  line-height:1.6
-}
-header{
-  background:#101a2b;
-  padding:16px 7%;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  flex-wrap:wrap;
-  gap:15px;
-  border-bottom:1px solid #263750
-}
-.logo{font-size:23px;font-weight:bold;color:#36d6ff}
-nav{display:flex;gap:18px;flex-wrap:wrap}
-nav a{color:#fff;text-decoration:none;font-size:14px}
-nav a:hover{color:#36d6ff}
-.hero{
-  padding:85px 7%;
-  text-align:center;
-  background:radial-gradient(circle at top,#16466b,#10182b 55%,#080d18);
-}
-.hero h1{font-size:clamp(32px,6vw,55px);line-height:1.2}
-.hero h1 span{color:#36d6ff}
-.hero p{color:#c4d1e4;margin:18px auto;max-width:650px}
-.btn{
-  display:inline-block;
-  padding:12px 23px;
-  margin:8px;
-  border-radius:7px;
-  background:#16bde8;
-  color:#06111d;
-  font-weight:bold;
-  text-decoration:none
-}
-.btn.secondary{background:transparent;color:#fff;border:1px solid #36d6ff}
-section{padding:55px 7%}
-.section-title{text-align:center;margin-bottom:28px}
-.section-title h2{font-size:29px;color:#36d6ff}
-.section-title p{color:#aebbd0}
-.cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:18px
-}
-.card{
-  background:#111d30;
-  border:1px solid #263b56;
-  padding:24px;
-  border-radius:12px;
-  text-align:center
-}
-.card h3{color:#36d6ff;margin-bottom:10px}
-.card p{color:#c0ccdc;font-size:14px}
-.notice{
-  background:#15243a;
-  border-left:4px solid #36d6ff;
-  padding:17px;
-  border-radius:7px;
-  color:#d4e2f3;
-  max-width:850px;
-  margin:20px auto
-}
-footer{
-  text-align:center;
-  background:#101a2b;
-  padding:25px;
-  color:#aebbd0;
-  border-top:1px solid #263750
-}
-@media(max-width:600px){
-  header{justify-content:center}
-  nav{justify-content:center}
-  .hero{padding:65px 6%}
-}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071426">
+  <meta name="description" content="RK SOFTWARE — Mobile software services, digital solutions and GSM tools.">
+  <title>RK SOFTWARE | Mobile Software Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="announcement"><span class="pulse"></span> RK SOFTWARE · Mobile Software Services & Digital Solutions</div>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="RK SOFTWARE home"><span class="brand-mark">RK</span><span>RK <b>SOFTWARE</b><small>SMART DIGITAL SOLUTIONS</small></span></a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu">☰</button>
+    <nav id="mainNav">
+      <a href="#home" class="nav-link active">Home</a>
+      <a href="#services" class="nav-link">Services</a>
+      <a href="#tools" class="nav-link">Tools</a>
+      <a href="#credits" class="nav-link">Credits</a>
+      <a href="#support" class="nav-link">Support</a>
+      <button class="nav-login" data-view="account">Login / Register</button>
+    </nav>
+  </header>
 
-<header>
-  <div class="logo">RK SOFTWARE</div>
-  <nav>
-    <a href="#home">Home</a>
-    <a href="#services">Services</a>
-    <a href="#tools">Tools</a>
-    <a href="#credits">Credits</a>
-    <a href="#support">Support</a>
-  </nav>
-</header>
+  <main>
+    <section class="hero section" id="home">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="eyebrow-line"></span> YOUR TRUSTED SOFTWARE PARTNER</div>
+        <h1>Powering your work.<br><span>Unlocking possibilities.</span></h1>
+        <p>Mobile software services, GSM tools and digital solutions — all in one place.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#services">Explore services <span>↗</span></a>
+          <button class="btn btn-ghost" data-view="account">Login / Register</button>
+        </div>
+        <div class="hero-proof"><div class="avatar-stack"><i>R</i><i>K</i><i>+</i></div><span>One portal for your software needs</span></div>
+      </div>
+      <div class="hero-visual">
+        <div class="visual-glow"></div>
+        <div class="device-card">
+          <div class="device-top"><span>RK / CONTROL CENTER</span><span class="live"><i></i> ONLINE</span></div>
+          <div class="device-orbit"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="chip">RK</div><span class="orbit-dot"></span></div>
+          <div class="device-bottom"><div><small>SOFTWARE SERVICES</small><strong>All systems in one place</strong></div><span class="arrow-circle">↗</span></div>
+        </div>
+        <div class="float-tag tag-one"><span>✦</span> Service portal</div>
+        <div class="float-tag tag-two"><span>✓</span> Easy ordering</div>
+      </div>
+    </section>
 
-<main>
-<section class="hero" id="home">
-  <h1>Welcome to <span>RK SOFTWARE</span></h1>
-  <p>Mobile Software Services & Digital Solutions</p>
-  <p>Your software service information portal.</p>
-  <a class="btn" href="#services">Explore Services</a>
-  <a class="btn secondary" href="#account">Login / Register</a>
-</section>
+    <section class="stats section">
+      <div><strong>01</strong><span>Service information</span></div><div><strong>02</strong><span>Tools catalogue</span></div><div><strong>03</strong><span>Order tracking</span></div><div><strong>04</strong><span>Customer support</span></div>
+    </section>
 
-<section id="services">
-  <div class="section-title">
-    <h2>Our Services</h2>
-    <p>Software-related service information</p>
-  </div>
-  <div class="cards">
-    <div class="card">
-      <h3>Software Services</h3>
-      <p>Information about available mobile software services.</p>
-    </div>
-    <div class="card">
-      <h3>Device Support</h3>
-      <p>General guidance and support for mobile software issues.</p>
-    </div>
-    <div class="card">
-      <h3>Technical Help</h3>
-      <p>Get information about technical service options.</p>
-    </div>
-  </div>
-</section>
+    <section class="section content-section" id="services">
+      <div class="section-heading"><div><div class="eyebrow">WHAT WE OFFER</div><h2>Explore our <span>services</span></h2><p>Find the service category you need.</p></div><a href="#support" class="text-link">Need help? Contact us ↗</a></div>
+      <div class="service-grid">
+        <article class="service-card"><div class="service-icon">⌕</div><h3>IMEI Services</h3><p>Browse available device information and supported service options.</p><a href="#support">Enquire now <b>↗</b></a></article>
+        <article class="service-card"><div class="service-icon">◈</div><h3>Server Services</h3><p>View server-based service information and current availability.</p><a href="#tools">View tools <b>↗</b></a></article>
+        <article class="service-card"><div class="service-icon">⌁</div><h3>Remote Services</h3><p>Request assistance for supported remote software services.</p><a href="#support">Get support <b>↗</b></a></article>
+        <article class="service-card"><div class="service-icon">▦</div><h3>Service by Group</h3><p>Explore services arranged by category and supported platform.</p><a href="#tools">Explore catalogue <b>↗</b></a></article>
+      </div>
+    </section>
 
-<section id="tools">
-  <div class="section-title">
-    <h2>Software Tools</h2>
-    <p>Service information and tool details</p>
-  </div>
-  <div class="cards">
-    <div class="card">
-      <h3>Software Tool 01</h3>
-      <p>Details coming soon.</p>
-    </div>
-    <div class="card">
-      <h3>Software Tool 02</h3>
-      <p>Details coming soon.</p>
-    </div>
-    <div class="card">
-      <h3>Software Tool 03</h3>
-      <p>Details coming soon.</p>
-    </div>
-  </div>
-</section>
+    <section class="section content-section tools-section" id="tools">
+      <div class="section-heading"><div><div class="eyebrow">POPULAR PICKS</div><h2>Featured <span>tools</span></h2><p>Sample catalogue — update products and prices from the admin demo.</p></div><div class="catalog-filter"><button class="filter active" data-filter="all">All</button><button class="filter" data-filter="unlock">Unlock</button><button class="filter" data-filter="utility">Utility</button></div></div>
+      <div class="tool-grid" id="toolGrid"></div>
+    </section>
 
-<section id="credits">
-  <div class="section-title">
-    <h2>Credits & Reseller</h2>
-    <p>Portal preview</p>
-  </div>
-  <div class="notice">
-    This is a demo section. Credit balance, reseller accounts
-    and transactions are not active on this website.
-  </div>
-</section>
+    <section class="credit-banner section" id="credits">
+      <div><div class="eyebrow">ACCOUNT BALANCE</div><h2>Keep your work<br><span>moving forward.</span></h2><p>Sign in to view your demo credit balance and recent order activity.</p><button class="btn btn-primary" data-view="account">View account <span>↗</span></button></div>
+      <div class="credit-art"><div class="credit-card"><small>RK SOFTWARE · CREDITS</small><div class="credit-symbol">✦</div><strong>Digital<br>Credits</strong><span>Simple · Clear · Convenient</span></div></div>
+    </section>
 
-<section id="account">
-  <div class="section-title">
-    <h2>Login / Register</h2>
-    <p>Account section preview</p>
-  </div>
-  <div class="notice">
-    Account registration is not active yet. No password or
-    personal information is collected on this demo page.
-  </div>
-</section>
+    <section class="section content-section support-section" id="support">
+      <div class="support-copy"><div class="eyebrow">WE'RE HERE TO HELP</div><h2>Questions? Let's<br><span>talk solutions.</span></h2><p>Send us a message about services, tools, orders or account help.</p><div class="support-detail"><span class="support-icon">✉</span><div><small>EMAIL SUPPORT</small><strong id="supportEmail">support@example.com</strong></div></div><div class="support-detail"><span class="support-icon">◷</span><div><small>SUPPORT HOURS</small><strong>Set your business hours here</strong></div></div></div>
+      <form class="support-form" id="supportForm"><h3>Send an enquiry</h3><label>Your name<input name="name" required placeholder="Enter your name"></label><label>Email or WhatsApp<input name="contact" required placeholder="How can we reach you?"></label><label>Message<textarea name="message" required rows="4" placeholder="Tell us what you need..."></textarea></label><button class="btn btn-primary" type="submit">Submit enquiry <span>↗</span></button><p class="form-note">Demo form: it saves the enquiry in this browser only.</p></form>
+    </section>
 
-<section id="support">
-  <div class="section-title">
-    <h2>Customer Support</h2>
-    <p>RK SOFTWARE support information</p>
-  </div>
-  <div class="notice">
-    Support details will be added here soon.
-  </div>
-</section>
-</main>
+    <section class="section account-section hidden" id="account">
+      <div class="section-heading"><div><div class="eyebrow">YOUR RK ACCOUNT</div><h2>Account <span>access</span></h2><p>Demo sign-in and registration for the front-end preview.</p></div><button class="text-link" data-view="home">← Back to home</button></div>
+      <div class="account-layout"><div class="account-intro"><div class="account-logo">RK</div><h3>Your workspace,<br>all in one place.</h3><p>Sign in to see your demo dashboard, saved orders and account information.</p></div><form class="account-form" id="authForm"><div class="tabs"><button type="button" class="tab active" data-auth="login">Login</button><button type="button" class="tab" data-auth="register">Create account</button></div><label id="nameField" class="hidden">Full name<input name="name" placeholder="Your full name"></label><label>Email address<input name="email" type="email" required placeholder="you@example.com"></label><label>Password<input name="password" type="password" minlength="6" required placeholder="At least 6 characters"></label><button class="btn btn-primary full" id="authSubmit" type="submit">Login to account ↗</button><p class="form-note">Demo only: account details are stored in local browser storage, not securely on a server.</p><div id="authMessage" class="message" aria-live="polite"></div></form></div>
+      <div class="dashboard hidden" id="dashboard"><div class="dashboard-head"><div><div class="eyebrow">WELCOME BACK</div><h3 id="dashName">Your account</h3></div><button class="btn btn-ghost" id="logoutBtn">Log out</button></div><div class="dashboard-cards"><div><small>DEMO CREDIT</small><strong id="dashCredits">$0.00</strong></div><div><small>YOUR ORDERS</small><strong id="dashOrders">0</strong></div><div><small>ACCOUNT STATUS</small><strong>Active demo</strong></div></div><h3 class="subheading">Recent orders</h3><div id="orderList" class="order-list">No orders yet.</div></div>
+    </section>
 
-<footer>
-  <p>© 2026 RK SOFTWARE. All Rights Reserved.</p>
-  <p>Mobile Software Services</p>
-</footer>
+    <section class="section admin-section hidden" id="admin">
+      <div class="section-heading"><div><div class="eyebrow">LOCAL DEMO CONTROL</div><h2>Admin <span>panel</span></h2><p>Manage the sample catalogue stored in this browser.</p></div><button class="text-link" data-view="home">← Back to home</button></div>
+      <div class="admin-warning">Prototype only. This page is not protected by server authentication. Do not publish sensitive admin controls or real customer data on GitHub Pages.</div>
+      <form id="productForm" class="admin-form"><label>Product name<input name="title" required placeholder="Tool name"></label><label>Category<select name="category"><option value="unlock">Unlock</option><option value="utility">Utility</option></select></label><label>Price (USD)<input name="price" type="number" min="0" step="0.01" required placeholder="1.00"></label><label>Delivery<select name="delivery"><option>Instant</option><option>Manual</option></select></label><button class="btn btn-primary" type="submit">Add product +</button></form><div id="adminProducts" class="admin-products"></div>
+    </section>
+  </main>
 
+  <footer class="footer"><div class="footer-main"><a class="brand" href="#home"><span class="brand-mark">RK</span><span>RK <b>SOFTWARE</b><small>SMART DIGITAL SOLUTIONS</small></span></a><p>Mobile software services & digital solutions.</p><div class="footer-links"><a href="#services">Services</a><a href="#tools">Tools</a><a href="#credits">Credits</a><a href="#support">Support</a><button data-view="admin">Admin demo</button></div></div><div class="footer-bottom"><span>© <span id="year"></span> RK SOFTWARE. All rights reserved.</span><span>Built for your digital workflow.</span></div></footer>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
 </body>
 </html>
