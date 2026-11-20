@@ -14,12 +14,14 @@ let products = read("rk_products", seedProducts);
 let currentUser = read("rk_current_user", null);
 let authMode = "login";
 let activeFilter = "all";
-const money = n => "$" + Number(n).toFixed(2);
+const money = n => "₹" + Number(n).toFixed(2);
 function toast(msg){const el=$("#toast");el.textContent=msg;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),2400)}
+function productMarkup(list){return list.map(p=>`<article class="tool-card"><div class="tool-top"><div class="tool-symbol">${p.category==="unlock"?"RK":"AMT"}</div><span class="tag">${escapeHtml(p.delivery)}</span></div><h3>${escapeHtml(p.title)}</h3><p>${escapeHtml(p.desc||"RK SOFTWARE service listing.")}</p><div class="tool-foot"><div class="price">₹${Number(p.price).toFixed(2)} <small>INR</small></div><button class="order-btn" data-order="${p.id}">Enquire / Order ↗</button></div></article>`).join("")||'<p class="form-note">No products in this category yet.</p>';}
 function renderProducts(){
   const list=products.filter(p=>activeFilter==="all"||p.category===activeFilter);
-  $("#toolGrid").innerHTML=list.map(p=>`<article class="tool-card"><div class="tool-top"><div class="tool-symbol">${p.category==="unlock"?"RK":"AMT"}</div><span class="tag">${escapeHtml(p.delivery)}</span></div><h3>${escapeHtml(p.title)}</h3><p>${escapeHtml(p.desc||"RK SOFTWARE service listing.")}</p><div class="tool-foot"><div class="price">${money(p.price)} <small>USD</small></div><button class="order-btn" data-order="${p.id}">Enquire / Order ↗</button></div></article>`).join("")||'<p class="form-note">No products in this category yet.</p>';
-  $$("#toolGrid [data-order]").forEach(b=>b.addEventListener("click",()=>orderProduct(Number(b.dataset.order))));
+  $("#toolGrid").innerHTML=productMarkup(list.slice(0,6));
+  $("#recentGrid").innerHTML=productMarkup([...products].reverse().slice(0,6));
+  $$("[data-order]").forEach(b=>b.addEventListener("click",()=>orderProduct(Number(b.dataset.order))));
   renderAdmin();
 }
 function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -30,7 +32,7 @@ function orderProduct(id){
   write("rk_orders",orders);toast("Demo order enquiry saved.");renderDashboard();
 }
 function showView(view){
-  const homeSections=["home","services","tools","credits","support"];
+  const homeSections=["home","services","tools","recent","credits","support"];
   homeSections.forEach(id=>$("#"+id).classList.toggle("hidden",view!=="home"));
   $("#account").classList.toggle("hidden",view!=="account");
   $("#admin").classList.toggle("hidden",view!=="admin");
