@@ -99,6 +99,7 @@ async function checkAdmin(user) {
 adminArea.style.display = "block";
 message.textContent = "";
 await loadTools();
+await loadOrders();
 return true;
   }
 
