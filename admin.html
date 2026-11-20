@@ -52,9 +52,15 @@ button{background:#f58220;color:#111;font-weight:bold;cursor:pointer}
 
 <section id="add" class="card">
 <h2>Add New Tool</h2>
-<input placeholder="Tool Name">
-<input placeholder="Tool Price">
-<button type="button">Add Tool (Not Connected Yet)</button>
+
+<input id="toolName" placeholder="Tool Name">
+<input id="toolCategory" placeholder="Category">
+<input id="priceINR" type="number" placeholder="Price in INR">
+<input id="priceUSD" type="number" placeholder="Price in USD">
+<input id="toolDescription" placeholder="Tool Description">
+
+<button type="button" id="addToolBtn">Save Tool</button>
+<p id="toolMessage"></p>
 </section>
 
 <section id="edit" class="card">
@@ -151,6 +157,44 @@ async function startAdmin() {
 }
 
 startAdmin();
+  document.getElementById("addToolBtn").addEventListener("click", async () => {
+  const msg = document.getElementById("toolMessage");
+  const name = document.getElementById("toolName").value.trim();
+  const category = document.getElementById("toolCategory").value.trim();
+  const inr = Number(document.getElementById("priceINR").value || 0);
+  const usd = Number(document.getElementById("priceUSD").value || 0);
+  const description = document.getElementById("toolDescription").value.trim();
+
+  if (!name) {
+    msg.textContent = "Please enter Tool Name.";
+    return;
+  }
+
+  msg.textContent = "Saving...";
+
+  const { error } = await supabaseClient
+    .from("tools")
+    .insert([{
+      name: name,
+      category: category,
+      price_inr: inr,
+      price_usd: usd,
+      description: description,
+      is_active: true
+    }]);
+
+  if (error) {
+    msg.textContent = "Error: " + error.message;
+    return;
+  }
+
+  msg.textContent = "Tool saved successfully!";
+  document.getElementById("toolName").value = "";
+  document.getElementById("toolCategory").value = "";
+  document.getElementById("priceINR").value = "";
+  document.getElementById("priceUSD").value = "";
+  document.getElementById("toolDescription").value = "";
+});
 </script>
 
 </body>
