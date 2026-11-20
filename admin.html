@@ -48,8 +48,10 @@ button{background:#f58220;color:#111;font-weight:bold;cursor:pointer}
 <p>Admin Login Successful.</p>
 <p>Total Tools: 0</p>
 <p>Total Orders: 0</p>
+</section><section id="manageTools" class="card">
+<h2>Manage All Tools</h2>
+<div id="toolsList">Loading tools...</div>
 </section>
-
 <section id="add" class="card">
 <h2>Add New Tool</h2>
 
@@ -157,6 +159,12 @@ async function startAdmin() {
 }
 
 startAdmin();
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+  if (event === "SIGNED_IN" && session) loadTools();
+  if (event === "SIGNED_OUT") {
+    document.getElementById("toolsList").textContent = "";
+  }
+});
   document.getElementById("addToolBtn").addEventListener("click", async () => {
   const msg = document.getElementById("toolMessage");
   const name = document.getElementById("toolName").value.trim();
@@ -195,6 +203,91 @@ startAdmin();
   document.getElementById("priceUSD").value = "";
   document.getElementById("toolDescription").value = "";
 });
+  async function loadTools() {
+  const list = document.getElementById("toolsList");
+  list.textContent = "Loading tools...";
+
+  const { data, error } = await supabaseClient
+    .from("tools")
+    .select("*")
+    .order("id", { ascending: false });
+
+  if (error) {
+    list.textContent = "Error: " + error.message;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    list.textContent = "No tools found.";
+    return;
+  }
+
+  list.innerHTML = "";
+
+  data.forEach(tool => {
+    const item = document.createElement("div");
+    item.className = "card";
+
+    const heading = document.createElement("h3");
+    heading.textContent = tool.name;
+
+    const details = document.createElement("p");
+    details.textContent =
+      "INR: ₹" + tool.price_inr +
+      " | USD: $" + tool.price_usd +
+      " | " + (tool.is_active ? "Active" : "Inactive");
+
+    const editButton = document.createElement("button");
+    editButton.textContent = "Edit Price";
+    editButton.onclick = async () => {
+      const inr = prompt("Enter new INR price:", tool.price_inr);
+      if (inr === null) return;
+
+      const usd = prompt("Enter new USD price:", tool.price_usd);
+      if (usd === null) return;
+
+      const { error } = await supabaseClient
+        .from("tools")
+        .update({
+          price_inr: Number(inr),
+          price_usd: Number(usd)
+        })
+        .eq("id", tool.id);
+
+      if (error) alert(error.message);
+      else loadTools();
+    };
+
+    const toggleButton = document.createElement("button");
+    toggleButton.textContent = tool.is_active ? "Deactivate" : "Activate";
+    toggleButton.onclick = async () => {
+      const { error } = await supabaseClient
+        .from("tools")
+        .update({ is_active: !tool.is_active })
+        .eq("id", tool.id);
+
+      if (error) alert(error.message);
+      else loadTools();
+    };
+
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete Tool";
+    deleteButton.onclick = async () => {
+      if (!confirm("Are you sure you want to delete " + tool.name + "?")) return;
+
+      const { error } = await supabaseClient
+        .from("tools")
+        .delete()
+        .eq("id", tool.id);
+
+      if (error) alert(error.message);
+      else loadTools();
+    };
+
+    item.append(heading, details, editButton, toggleButton, deleteButton);
+    list.appendChild(item);
+  });
+}
 </script>
 
 </body>
