@@ -95,9 +95,11 @@ const loginBtn = document.getElementById("loginBtn");
 
 async function checkAdmin(user) {
   if (!user) {
-    loginBox.style.display = "block";
-    adminArea.style.display = "none";
-    return false;
+  loginBox.style.display = "none";
+adminArea.style.display = "block";
+message.textContent = "";
+await loadTools();
+return true;
   }
 
   const { data, error } = await supabaseClient.rpc("is_admin");
