@@ -3,70 +3,190 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rk software</title>
+<title>RK SOFTWARE | Mobile Software Services</title>
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #101827;
-  color: white;
-  text-align: center;
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:Arial,sans-serif;
+  background:#080d18;
+  color:#f4f6ff;
+  line-height:1.6
 }
-header {
-  background: #17243a;
-  padding: 25px;
+header{
+  background:#101a2b;
+  padding:16px 7%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:15px;
+  border-bottom:1px solid #263750
 }
-h1 {
-  color: #38bdf8;
+.logo{font-size:23px;font-weight:bold;color:#36d6ff}
+nav{display:flex;gap:18px;flex-wrap:wrap}
+nav a{color:#fff;text-decoration:none;font-size:14px}
+nav a:hover{color:#36d6ff}
+.hero{
+  padding:85px 7%;
+  text-align:center;
+  background:radial-gradient(circle at top,#16466b,#10182b 55%,#080d18);
 }
-.container {
-  padding: 30px 15px;
+.hero h1{font-size:clamp(32px,6vw,55px);line-height:1.2}
+.hero h1 span{color:#36d6ff}
+.hero p{color:#c4d1e4;margin:18px auto;max-width:650px}
+.btn{
+  display:inline-block;
+  padding:12px 23px;
+  margin:8px;
+  border-radius:7px;
+  background:#16bde8;
+  color:#06111d;
+  font-weight:bold;
+  text-decoration:none
 }
-.card {
-  background: #1e293b;
-  padding: 25px;
-  margin: 20px auto;
-  border-radius: 12px;
-  max-width: 450px;
+.btn.secondary{background:transparent;color:#fff;border:1px solid #36d6ff}
+section{padding:55px 7%}
+.section-title{text-align:center;margin-bottom:28px}
+.section-title h2{font-size:29px;color:#36d6ff}
+.section-title p{color:#aebbd0}
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:18px
 }
-button {
-  background: #0284c7;
-  color: white;
-  border: 0;
-  padding: 12px 25px;
-  border-radius: 7px;
-  font-size: 16px;
+.card{
+  background:#111d30;
+  border:1px solid #263b56;
+  padding:24px;
+  border-radius:12px;
+  text-align:center
 }
-footer {
-  padding: 20px;
-  color: #aaa;
+.card h3{color:#36d6ff;margin-bottom:10px}
+.card p{color:#c0ccdc;font-size:14px}
+.notice{
+  background:#15243a;
+  border-left:4px solid #36d6ff;
+  padding:17px;
+  border-radius:7px;
+  color:#d4e2f3;
+  max-width:850px;
+  margin:20px auto
+}
+footer{
+  text-align:center;
+  background:#101a2b;
+  padding:25px;
+  color:#aebbd0;
+  border-top:1px solid #263750
+}
+@media(max-width:600px){
+  header{justify-content:center}
+  nav{justify-content:center}
+  .hero{padding:65px 6%}
 }
 </style>
 </head>
 <body>
 
 <header>
-<h1>Rk software</h1>
-<p>Software Credits & Tool Rental</p>
+  <div class="logo">RK SOFTWARE</div>
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#services">Services</a>
+    <a href="#tools">Tools</a>
+    <a href="#credits">Credits</a>
+    <a href="#support">Support</a>
+  </nav>
 </header>
 
-<div class="container">
-<div class="card">
-<h2>Welcome to Rk software</h2>
-<p>Buy Software Credits and Explore Tool Rental Services.</p>
-<button>Explore Tools</button>
-</div>
+<main>
+<section class="hero" id="home">
+  <h1>Welcome to <span>RK SOFTWARE</span></h1>
+  <p>Mobile Software Services & Digital Solutions</p>
+  <p>Your software service information portal.</p>
+  <a class="btn" href="#services">Explore Services</a>
+  <a class="btn secondary" href="#account">Login / Register</a>
+</section>
 
-<div class="card">
-<h2>Available Tools</h2>
-<p>AMT Tool</p>
-<p>Smart U2S Tool</p>
-<p>QNX Tool</p>
-</div>
-</div>
+<section id="services">
+  <div class="section-title">
+    <h2>Our Services</h2>
+    <p>Software-related service information</p>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <h3>Software Services</h3>
+      <p>Information about available mobile software services.</p>
+    </div>
+    <div class="card">
+      <h3>Device Support</h3>
+      <p>General guidance and support for mobile software issues.</p>
+    </div>
+    <div class="card">
+      <h3>Technical Help</h3>
+      <p>Get information about technical service options.</p>
+    </div>
+  </div>
+</section>
+
+<section id="tools">
+  <div class="section-title">
+    <h2>Software Tools</h2>
+    <p>Service information and tool details</p>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <h3>Software Tool 01</h3>
+      <p>Details coming soon.</p>
+    </div>
+    <div class="card">
+      <h3>Software Tool 02</h3>
+      <p>Details coming soon.</p>
+    </div>
+    <div class="card">
+      <h3>Software Tool 03</h3>
+      <p>Details coming soon.</p>
+    </div>
+  </div>
+</section>
+
+<section id="credits">
+  <div class="section-title">
+    <h2>Credits & Reseller</h2>
+    <p>Portal preview</p>
+  </div>
+  <div class="notice">
+    This is a demo section. Credit balance, reseller accounts
+    and transactions are not active on this website.
+  </div>
+</section>
+
+<section id="account">
+  <div class="section-title">
+    <h2>Login / Register</h2>
+    <p>Account section preview</p>
+  </div>
+  <div class="notice">
+    Account registration is not active yet. No password or
+    personal information is collected on this demo page.
+  </div>
+</section>
+
+<section id="support">
+  <div class="section-title">
+    <h2>Customer Support</h2>
+    <p>RK SOFTWARE support information</p>
+  </div>
+  <div class="notice">
+    Support details will be added here soon.
+  </div>
+</section>
+</main>
 
 <footer>
-<p>Rk software Demo Website</p>
+  <p>© 2026 RK SOFTWARE. All Rights Reserved.</p>
+  <p>Mobile Software Services</p>
 </footer>
 
 </body>
