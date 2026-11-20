@@ -290,6 +290,43 @@ startAdmin();
     list.appendChild(item);
   });
 }
+  async function loadOrders() {
+  const list = document.getElementById("ordersList");
+  list.textContent = "Loading orders...";
+
+  const { data, error } = await supabaseClient
+    .from("orders")
+    .select("*")
+    .order("id", { ascending: false });
+
+  if (error) {
+    list.textContent = "Error: " + error.message;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    list.textContent = "No orders found.";
+    return;
+  }
+
+  list.innerHTML = "";
+
+  data.forEach(order => {
+    const item = document.createElement("div");
+    item.className = "card";
+
+    const details = document.createElement("p");
+    details.textContent =
+      "Order ID: " + order.id +
+      " | Customer: " + (order.customer_name || "N/A") +
+      " | Tool: " + order.tool_name +
+      " | Amount: " + order.currency + " " + order.amount +
+      " | Status: " + order.status;
+
+    item.appendChild(details);
+    list.appendChild(item);
+  });
+}
 </script>
 
 </body>
