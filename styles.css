@@ -174,3 +174,28 @@ footer {
     max-width: 100%;
   }
 }
+/* BLACK TEXT + ORANGE HIGHLIGHTS */
+
+:root {
+  --text: #171717;
+}
+
+body {
+  color: #171717 !important;
+}
+
+p, li, label, small {
+  color: #171717 !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #111111 !important;
+}
+
+a:not(.btn) {
+  color: #F07800 !important;
+}
+
+strong, b {
+  color: #F07800 !important;
+}
