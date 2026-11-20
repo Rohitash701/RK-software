@@ -94,11 +94,11 @@ const message = document.getElementById("message");
 const loginBtn = document.getElementById("loginBtn");
 
 async function checkAdmin(user) {
-if (!user) {
-  loginBox.style.display = "block";
-  adminArea.style.display = "none";
-  return false;
-}
+  if (!user) {
+    loginBox.style.display = "block";
+    adminArea.style.display = "none";
+    return false;
+  }
 
   const { data, error } = await supabaseClient.rpc("is_admin");
 
@@ -113,6 +113,10 @@ if (!user) {
   loginBox.style.display = "none";
   adminArea.style.display = "block";
   message.textContent = "";
+
+  await loadTools();
+  await loadOrders();
+
   return true;
 }
 
