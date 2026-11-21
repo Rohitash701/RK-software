@@ -295,7 +295,7 @@ startAdmin();
     list.appendChild(item);
   });
 }
-  async function loadOrders() {
+async function loadOrders() {
   const list = document.getElementById("ordersList");
   list.textContent = "Loading orders...";
 
@@ -323,10 +323,9 @@ startAdmin();
     const details = document.createElement("p");
     details.textContent =
       "Order ID: " + order.id +
-      " | Customer: " + (order.customer_name || "N/A") +
-      " | Tool: " + order.tool_name +
-      " | Amount: " + order.currency + " " + order.amount +
-      " | Status: " + order.status;
+      " | Customer: " + (order.Customer_name || "N/A") +
+      " | Tool: " + (order.Tool_name || "N/A") +
+      " | Amount: " + (order.Currency || "") + " " + (order.Amount || 0);
 
     item.appendChild(details);
     list.appendChild(item);
