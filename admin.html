@@ -56,7 +56,14 @@ button{background:#f58220;color:#111;font-weight:bold;cursor:pointer}
 <h2>Add New Tool</h2>
 
 <input id="toolName" placeholder="Tool Name">
-<input id="toolCategory" placeholder="Category">
+<select id="toolCategory">
+  <option value="">Select Category</option>
+  <option value="Home Tools">Home Tools</option>
+  <option value="Server Services">Server Services</option>
+  <option value="IMS Services">IMS Services</option>
+  <option value="Tool Rental">Tool Rental</option>
+  <option value="File Services">File Services</option>
+</select>
 
 <input id="priceINR" type="number" placeholder="Price in INR">
 <input id="priceUSD" type="number" placeholder="Price in USD">
