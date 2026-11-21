@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RK SOFTWARE - Server Services</title>
+<style>
+body{font-family:Arial,sans-serif;background:#101827;color:white;margin:0;padding:20px}
+.container{max-width:600px;margin:40px auto;background:#1e293b;padding:25px;border-radius:12px}
+h1,h2{text-align:center}
+input,select,button{width:100%;padding:13px;margin:9px 0;box-sizing:border-box;border-radius:7px;border:1px solid #64748b;font-size:16px}
+button{background:#f59e0b;color:#111827;font-weight:bold;border:0;cursor:pointer}
+.switch{text-align:center;color:#fbbf24;cursor:pointer}
+#services{display:none}
+.tool{background:#334155;padding:15px;margin:12px 0;border-radius:8px}
+#message{text-align:center;color:#fbbf24}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>RK SOFTWARE</h1>
+<h2>Customer Account</h2>
+
+<div id="authBox">
+<h3 id="formTitle">Register</h3>
+
+<input id="customerName" placeholder="Your Name">
+<input id="email" type="email" placeholder="Email Address">
+<input id="password" type="password" placeholder="Password">
+
+<select id="currency">
+<option value="INR">INR ₹</option>
+<option value="USD">USD $</option>
+</select>
+
+<button id="submitBtn">Register</button>
+<p class="switch" id="switchBtn">Already have an account? Login</p>
+<p id="message"></p>
+</div>
+
+<div id="services">
+<h2>Server Services</h2>
+<p id="welcome"></p>
+<input id="searchTool" placeholder="Search tools...">
+<div id="toolsList">Loading tools...</div>
+<button id="logoutBtn">Logout</button>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+
+<script>
+let isRegister = true;
+
+const authBox = document.getElementById("authBox");
+const services = document.getElementById("services");
+const message = document.getElementById("message");
+
+document.getElementById("switchBtn").onclick = () => {
+  isRegister = !isRegister;
+  document.getElementById("formTitle").textContent = isRegister ? "Register" : "Login";
+  document.getElementById("submitBtn").textContent = isRegister ? "Register" : "Login";
+  document.getElementById("switchBtn").textContent = isRegister
+    ? "Already have an account? Login"
+    : "New customer? Register";
+  document.getElementById("customerName").style.display = isRegister ? "block" : "none";
+  document.getElementById("currency").style.display = isRegister ? "block" : "none";
+  message.textContent = "";
+};
+
+async function showServices(user) {
+  if (!user) return;
+
+  authBox.style.display = "none";
+  services.style.display = "block";
+
+  const currency = user.user_metadata?.currency || "INR";
+  document.getElementById("welcome").textContent =
+    "Welcome " + (user.user_metadata?.full_name || user.email) +
+    " | Currency: " + currency;
+
+  await loadCustomerTools(currency);
+}
+
+async function loadCustomerTools(currency) {
+  const list = document.getElementById("toolsList");
+  list.textContent = "Loading tools...";
+
+  const { data, error } = await supabaseClient
+    .from("tools")
+    .select("*")
+    .eq("is_active", true)
+    .eq("category", "Server Services")
+    .order("id", { ascending: false });
+
+  if (error) {
+    list.textContent = "Error: " + error.message;
+    return;
+  }
+
+  window.customerTools = data || [];
+  renderCustomerTools(currency);
+}
+
+function renderCustomerTools(currency) {
+  const list = document.getElementById("toolsList");
+  const search = document.getElementById("searchTool").value.toLowerCase();
+
+  list.innerHTML = "";
+  const filtered = (window.customerTools || []).filter(tool =>
+    tool.name.toLowerCase().includes(search)
+  );
+
+  if (!filtered.length) {
+    list.textContent = "No tools found.";
+    return;
+  }
+
+  filtered.forEach(tool => {
+    const item = document.createElement("div");
+    item.className = "tool";
+
+    const name = document.createElement("h3");
+    name.textContent = tool.name;
+
+    const price = document.createElement("p");
+    price.textContent = currency === "USD"
+      ? "Price: $" + tool.price_usd
+      : "Price: ₹" + tool.price_inr;
+
+    const description = document.createElement("p");
+    description.textContent = tool.description || "";
+
+    item.append(name, price, description);
+    list.appendChild(item);
+  });
+}
+
+document.getElementById("searchTool").addEventListener("input", async () => {
+  const { data } = await supabaseClient.auth.getUser();
+  if (data.user) {
+    renderCustomerTools(data.user.user_metadata?.currency || "INR");
+  }
+});
+
+document.getElementById("submitBtn").addEventListener("click", async () => {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const name = document.getElementById("customerName").value.trim();
+  const currency = document.getElementById("currency").value;
+
+  if (!email || !password) {
+    message.textContent = "Please enter email and password.";
+    return;
+  }
+
+  message.textContent = "Please wait...";
+  document.getElementById("submitBtn").disabled = true;
+
+  try {
+    if (isRegister) {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+            currency: currency
+          },
+          emailRedirectTo: "https://rohitash701.github.io/RK-software/server.html"
+        }
+      });
+
+      if (error) throw error;
+
+      message.textContent = data.session
+        ? "Registration successful!"
+        : "Registration successful! Please verify your email, then Login.";
+    } else {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+      await showServices(data.user);
+    }
+  } catch (error) {
+    message.textContent = error.message;
+  } finally {
+    document.getElementById("submitBtn").disabled = false;
+  }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  await supabaseClient.auth.signOut();
+  services.style.display = "none";
+  authBox.style.display = "block";
+  message.textContent = "You have logged out.";
+});
+
+async function startCustomerPage() {
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (error) {
+    message.textContent = error.message;
+    return;
+  }
+
+  if (data.session?.user) {
+    await showServices(data.session.user);
+  }
+}
+
+startCustomerPage();
+</script>
+</body>
+</html>
