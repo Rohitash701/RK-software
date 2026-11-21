@@ -2,21 +2,30 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>RK SOFTWARE Admin Panel</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#111;color:#fff;font-family:Arial,sans-serif}
-header{background:#f58220;color:#111;padding:20px;font-size:23px;font-weight:bold}
+header{background:#f58220;color:#111;padding:18px;font-size:22px;font-weight:bold}
 nav{display:flex;flex-wrap:wrap;background:#222;padding:10px;gap:8px}
 nav a{color:white;text-decoration:none;padding:10px;background:#333;border-radius:5px}
-main{padding:18px}
+main{padding:14px}
 h2{color:#ff8a24}
-.card{background:#222;border:1px solid #444;border-radius:10px;padding:18px;margin:12px 0}
-input,button{padding:12px;width:100%;margin:7px 0;border-radius:6px;border:0}
-button{background:#f58220;color:#111;font-weight:bold;cursor:pointer}
+.card{background:#222;border:1px solid #444;border-radius:10px;padding:16px;margin:12px 0}
+input,select,button{padding:12px;width:100%;margin:7px 0;border-radius:6px;border:1px solid #555}
+input,select{background:#151515;color:white}
+button{background:#f58220;color:#111;border:0;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.5}
 #adminArea{display:none}
 #message{color:#ff8a24;white-space:pre-wrap}
+.result{border:1px solid #555;border-radius:8px;padding:12px;margin:8px 0;overflow-wrap:anywhere}
+.money{font-size:25px;color:#ff9b32;font-weight:bold}
+.success{color:#55dd88}
+.error{color:#ff7777}
+label{display:block;margin:8px 0}
+label input[type=checkbox]{width:auto}
+.small{font-size:13px;color:#bbb}
 </style>
 </head>
 <body>
@@ -26,75 +35,96 @@ button{background:#f58220;color:#111;font-weight:bold;cursor:pointer}
 <main>
 <section id="loginBox" class="card">
 <h2>Admin Login</h2>
-<input id="email" type="email" placeholder="Admin Email" autocomplete="username">
-<input id="password" type="password" placeholder="Password" autocomplete="current-password">
-<button id="loginBtn" type="button">Login</button>
+<input id="email" type="email" placeholder="Admin Email">
+<input id="password" type="password" placeholder="Password">
+<button id="loginBtn">Login</button>
 <p id="message"></p>
 </section>
 
 <div id="adminArea">
 <nav>
 <a href="#dashboard">Dashboard</a>
+<a href="#wallet">Wallet</a>
 <a href="#add">Add Tool</a>
-<a href="#edit">Edit Tool</a>
+<a href="#manageTools">Manage Tools</a>
 <a href="#orders">Orders</a>
 <a href="#settings">Settings</a>
 </nav>
 
-<main>
 <section id="dashboard" class="card">
 <h2>Dashboard</h2>
 <p>Welcome to RK SOFTWARE Admin Panel.</p>
-<p>Admin Login Successful.</p>
-<p>Total Tools: 0</p>
-<p>Total Orders: 0</p>
-</section><section id="manageTools" class="card">
-<h2>Manage All Tools</h2>
-<div id="toolsList">Loading tools...</div>
+<p class="success">Admin Login Successful.</p>
 </section>
-<section id="add" class="card">
-<h2>Add New Tool</h2>
 
-<input id="toolName" placeholder="Tool Name">
-<select id="toolCategory">
-  <option value="">Select Category</option>
-  <option value="Home Tools">Home Tools</option>
-  <option value="Server Services">Server Services</option>
-  <option value="IMS Services">IMS Services</option>
-  <option value="Tool Rental">Tool Rental</option>
-  <option value="File Services">File Services</option>
+<section id="wallet" class="card">
+<h2>Customer Wallet Management</h2>
+<input id="customerSearch" placeholder="Search Customer ID or Gmail">
+<button id="searchCustomerBtn">Search Customer</button>
+<p id="walletMessage"></p>
+<div id="customerResults"></div>
+
+<div id="selectedCustomer" class="card" style="display:none">
+<h3>Selected Customer</h3>
+<p id="customerInfo"></p>
+<p>Wallet Balance</p>
+<div id="customerBalance" class="money">₹0.00</div>
+
+<label>Wallet Action</label>
+<select id="walletAction">
+<option value="credit">Add Money</option>
+<option value="debit">Deduct Money</option>
 </select>
 
-<input id="priceINR" type="number" placeholder="Price in INR">
-<input id="priceUSD" type="number" placeholder="Price in USD">
+<label>Amount</label>
+<input id="walletAmount" type="number" min="0.01" step="0.01" placeholder="Enter Amount">
 
+<label>Description</label>
+<input id="walletDescription" placeholder="Reason / Note">
+
+<button id="applyWalletBtn">Confirm Wallet Update</button>
+<p id="walletActionMessage"></p>
+</div>
+
+<h3>Transaction History</h3>
+<div id="walletTransactions">Search a customer first.</div>
+</section>
+
+<section id="add" class="card">
+<h2>Add New Tool</h2>
+<input id="toolName" placeholder="Tool Name">
+
+<select id="toolCategory">
+<option value="">Select Category</option>
+<option value="Home Tools">Home Tools</option>
+<option value="Server Services">Server Services</option>
+<option value="IMS Services">IMS Services</option>
+<option value="Tool Rental">Tool Rental</option>
+<option value="File Services">File Services</option>
+</select>
+
+<input id="priceINR" type="number" min="0" placeholder="Price in INR">
+<input id="priceUSD" type="number" min="0" placeholder="Price in USD">
 <input id="toolDescription" placeholder="Tool Description">
 
 <h3>Service Settings</h3>
-
 <label><input type="checkbox" id="otpEnabled"> OTP Based</label>
-
 <label><input type="checkbox" id="creditEnabled"> Credit Based</label>
-
 <label><input type="checkbox" id="quantityEnabled"> Quantity Required</label>
-
 <label><input type="checkbox" id="usernameRequired"> Username Required</label>
-
 <label><input type="checkbox" id="gmailRequired"> Gmail Required</label>
 
-<input id="creditPrice" type="number" placeholder="Price Per Credit">
+<input id="creditPrice" type="number" min="0" placeholder="Price Per Credit">
+<input id="minQuantity" type="number" min="1" value="1" placeholder="Minimum Quantity">
+<input id="maxQuantity" type="number" min="1" value="1" placeholder="Maximum Quantity">
 
-<input id="minQuantity" type="number" placeholder="Minimum Quantity" value="1">
-
-<input id="maxQuantity" type="number" placeholder="Maximum Quantity" value="1">
-
-<button type="button" id="addToolBtn">Save Tool</button>
-
+<button id="addToolBtn">Save Tool</button>
 <p id="toolMessage"></p>
 </section>
-<section id="edit" class="card">
-<h2>Edit Tool</h2>
-<p>Tool editing will be connected next.</p>
+
+<section id="manageTools" class="card">
+<h2>Manage All Tools</h2>
+<div id="toolsList">Loading tools...</div>
 </section>
 
 <section id="orders" class="card">
@@ -105,9 +135,8 @@ button{background:#f58220;color:#111;font-weight:bold;cursor:pointer}
 <section id="settings" class="card">
 <h2>Settings</h2>
 <p>RK SOFTWARE Website Settings</p>
-<button id="logoutBtn" type="button">Logout</button>
+<button id="logoutBtn">Logout</button>
 </section>
-</main>
 </div>
 </main>
 
@@ -115,283 +144,467 @@ button{background:#f58220;color:#111;font-weight:bold;cursor:pointer}
 <script src="supabase.js"></script>
 
 <script>
-const loginBox = document.getElementById("loginBox");
-const adminArea = document.getElementById("adminArea");
-const message = document.getElementById("message");
-const loginBtn = document.getElementById("loginBtn");
+const $ = id => document.getElementById(id);
+let selectedCustomer = null;
 
-async function checkAdmin(user) {
-  if (!user) {
-    loginBox.style.display = "block";
-    adminArea.style.display = "none";
+function msg(id,text,type=""){
+  $(id).textContent=text;
+  $(id).className=type;
+}
+
+function money(value,currency){
+  const n=Number(value||0).toFixed(2);
+  return currency==="USD" ? "$"+n : "₹"+n;
+}
+
+async function checkAdmin(user){
+  if(!user){
+    $("loginBox").style.display="block";
+    $("adminArea").style.display="none";
     return false;
   }
 
-  const { data, error } = await supabaseClient.rpc("is_admin");
+  const {data,error}=await supabaseClient.rpc("is_admin");
 
-  if (error || data !== true) {
+  if(error || data!==true){
     await supabaseClient.auth.signOut();
-    loginBox.style.display = "block";
-    adminArea.style.display = "none";
-    message.textContent = "Access denied. This account is not an admin.";
+    $("loginBox").style.display="block";
+    $("adminArea").style.display="none";
+    msg("message","Access denied. This account is not an admin.","error");
     return false;
   }
 
-  loginBox.style.display = "none";
-  adminArea.style.display = "block";
-  message.textContent = "";
+  $("loginBox").style.display="none";
+  $("adminArea").style.display="block";
+  msg("message","");
 
   await loadTools();
   await loadOrders();
-
   return true;
 }
 
-loginBtn.addEventListener("click", async () => {
-  message.textContent = "Please wait...";
-  loginBtn.disabled = true;
+$("loginBtn").addEventListener("click",async()=>{
+  msg("message","Please wait...");
+  $("loginBtn").disabled=true;
 
-  try {
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
-
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-      email,
-      password
+  try{
+    const {data,error}=await supabaseClient.auth.signInWithPassword({
+      email:$("email").value.trim(),
+      password:$("password").value
     });
-
-    if (error) throw error;
-
+    if(error)throw error;
     await checkAdmin(data.user);
-  } catch (error) {
-    message.textContent = error.message;
-  } finally {
-    loginBtn.disabled = false;
+  }catch(e){
+    msg("message",e.message,"error");
+  }finally{
+    $("loginBtn").disabled=false;
   }
 });
 
-document.getElementById("logoutBtn").addEventListener("click", async () => {
+$("logoutBtn").addEventListener("click",async()=>{
   await supabaseClient.auth.signOut();
-  loginBox.style.display = "block";
-  adminArea.style.display = "none";
-  document.getElementById("password").value = "";
-  message.textContent = "You have logged out.";
+  $("loginBox").style.display="block";
+  $("adminArea").style.display="none";
+  $("password").value="";
+  msg("message","You have logged out.");
 });
 
-async function startAdmin() {
-  const { data, error } = await supabaseClient.auth.getSession();
+async function startAdmin(){
+  const {data,error}=await supabaseClient.auth.getSession();
+  if(error){msg("message",error.message,"error");return;}
+  await checkAdmin(data.session?.user||null);
+}
+startAdmin();
 
-  if (error) {
-    message.textContent = error.message;
+supabaseClient.auth.onAuthStateChange((event)=>{
+  if(event==="SIGNED_OUT"){
+    $("loginBox").style.display="block";
+    $("adminArea").style.display="none";
+    $("toolsList").textContent="";
+    $("ordersList").textContent="";
+  }
+});
+
+// CUSTOMER SEARCH
+$("searchCustomerBtn").addEventListener("click",searchCustomers);
+$("customerSearch").addEventListener("keydown",e=>{
+  if(e.key==="Enter")searchCustomers();
+});
+
+async function searchCustomers(){
+  const q=$("customerSearch").value.trim();
+  const results=$("customerResults");
+
+  selectedCustomer=null;
+  $("selectedCustomer").style.display="none";
+  $("walletTransactions").textContent="Select a customer.";
+  results.textContent="Searching...";
+
+  if(!q){
+    results.textContent="Enter Customer ID or Gmail.";
     return;
   }
 
-  await checkAdmin(data.session?.user || null);
+  const safe=q.replace(/[,%()]/g,"");
+
+  const {data,error}=await supabaseClient
+    .from("rk_customer_profiles")
+    .select("user_id,customer_id,full_name,email,currency")
+    .or("customer_id.ilike.%"+safe+"%,email.ilike.%"+safe+"%")
+    .limit(20);
+
+  if(error){
+    results.textContent="Search Error: "+error.message;
+    return;
+  }
+
+  if(!data || data.length===0){
+    results.textContent="No customer found.";
+    return;
+  }
+
+  results.innerHTML="";
+
+  for(const customer of data){
+    const walletResult=await supabaseClient
+      .from("rk_wallet_accounts")
+      .select("balance,currency")
+      .eq("user_id",customer.user_id)
+      .maybeSingle();
+
+    const wallet=walletResult.data;
+    const item=document.createElement("div");
+    item.className="result";
+
+    const title=document.createElement("h3");
+    title.textContent=customer.full_name||"Customer";
+
+    const detail=document.createElement("p");
+    detail.textContent=
+      "Customer ID: "+customer.customer_id+
+      " | Gmail: "+customer.email+
+      " | Balance: "+money(wallet?.balance||0,wallet?.currency||customer.currency);
+
+    const choose=document.createElement("button");
+    choose.textContent="Select Customer";
+    choose.onclick=()=>selectCustomer(customer,wallet);
+
+    item.append(title,detail,choose);
+    results.appendChild(item);
+  }
 }
 
-startAdmin();
-  supabaseClient.auth.onAuthStateChange((event, session) => {
-  if (event === "SIGNED_IN" && session) loadTools();
-  if (event === "SIGNED_OUT") {
-    document.getElementById("toolsList").textContent = "";
-  }
-});
-document.getElementById("addToolBtn").addEventListener("click", async () => {
-  const msg = document.getElementById("toolMessage");
+function selectCustomer(customer,wallet){
+  selectedCustomer=customer;
+  $("selectedCustomer").style.display="block";
 
-  const name = document.getElementById("toolName").value.trim();
-  const category = document.getElementById("toolCategory").value.trim();
-  const inr = Number(document.getElementById("priceINR").value || 0);
-  const usd = Number(document.getElementById("priceUSD").value || 0);
-  const description = document.getElementById("toolDescription").value.trim();
+  $("customerInfo").textContent=
+    (customer.full_name||"Customer")+
+    " | "+customer.customer_id+
+    " | "+customer.email;
 
-  const otp = document.getElementById("otpEnabled").checked;
-  const credit = document.getElementById("creditEnabled").checked;
-  const quantity = document.getElementById("quantityEnabled").checked;
-  const username = document.getElementById("usernameRequired").checked;
-  const gmail = document.getElementById("gmailRequired").checked;
+  $("customerBalance").textContent=
+    money(wallet?.balance||0,wallet?.currency||customer.currency);
 
-  const creditPrice = Number(document.getElementById("creditPrice").value || 0);
-  const minQty = Number(document.getElementById("minQuantity").value || 1);
-  const maxQty = Number(document.getElementById("maxQuantity").value || 1);
+  $("walletAmount").value="";
+  $("walletDescription").value="";
+  msg("walletActionMessage","");
 
-  if (!name) {
-    msg.textContent = "Please enter Tool Name.";
-    return;
-  }
+  loadTransactions(customer.user_id);
+}
 
-  msg.textContent = "Saving...";
+async function loadTransactions(userId){
+  const box=$("walletTransactions");
+  box.textContent="Loading transactions...";
 
-  const { error } = await supabaseClient
-    .from("tools")
-    .insert([{
-      name: name,
-      category: category,
-      price_inr: inr,
-      price_usd: usd,
-      description: description,
-      is_active: true,
-      service_type: "server",
-      otp_enabled: otp,
-      credit_enabled: credit,
-      quantity_enabled: quantity,
-      username_required: username,
-      gmail_required: gmail,
-      credit_price: creditPrice,
-      min_quantity: minQty,
-      max_quantity: maxQty
-    }]);
-
-  if (error) {
-    msg.textContent = "Error: " + error.message;
-    return;
-  }
-
-  msg.textContent = "Tool saved successfully!";
-
-  document.getElementById("toolName").value = "";
-  document.getElementById("toolCategory").value = "";
-  document.getElementById("priceINR").value = "";
-  document.getElementById("priceUSD").value = "";
-  document.getElementById("toolDescription").value = "";
-
-  document.getElementById("otpEnabled").checked = false;
-  document.getElementById("creditEnabled").checked = false;
-  document.getElementById("quantityEnabled").checked = false;
-  document.getElementById("usernameRequired").checked = false;
-  document.getElementById("gmailRequired").checked = false;
-
-  document.getElementById("creditPrice").value = "";
-  document.getElementById("minQuantity").value = "1";
-  document.getElementById("maxQuantity").value = "1";
-
-  loadTools();
-});
-  async function loadTools() {
-  const list = document.getElementById("toolsList");
-  list.textContent = "Loading tools...";
-
-  const { data, error } = await supabaseClient
-    .from("tools")
+  const {data,error}=await supabaseClient
+    .from("rk_wallet_transactions")
     .select("*")
+    .eq("user_id",userId)
+    .order("created_at",{ascending:false})
+    .limit(50);
 
-    .order("id", { ascending: false });
-
-  if (error) {
-    list.textContent = "Error: " + error.message;
-
+  if(error){
+    box.textContent="Error: "+error.message;
     return;
   }
 
-  if (!data || data.length === 0) {
-    list.textContent = "No tools found.";
-
+  if(!data?.length){
+    box.textContent="No transactions found.";
     return;
   }
 
-  list.innerHTML = "";
+  box.innerHTML="";
 
-  data.forEach(tool => {
-    const item = document.createElement("div");
-    item.className = "card";
+  data.forEach(tx=>{
+    const item=document.createElement("div");
+    item.className="result";
 
-    const heading = document.createElement("h3");
-    heading.textContent = tool.name;
+    const line=document.createElement("p");
+    line.textContent=
+      tx.transaction_type.toUpperCase()+
+      " | "+money(tx.amount,tx.currency)+
+      " | "+(tx.description||"No description");
 
-    const details = document.createElement("p");
-    details.textContent =
-      "INR: ₹" + tool.price_inr +
-      " | USD: $" + tool.price_usd +
-      " | " + (tool.is_active ? "Active" : "Inactive");
+    const date=document.createElement("p");
+    date.className="small";
+    date.textContent=new Date(tx.created_at).toLocaleString();
 
-    const editButton = document.createElement("button");
-    editButton.textContent = "Edit Price";
-    editButton.onclick = async () => {
-      const inr = prompt("Enter new INR price:", tool.price_inr);
-      if (inr === null) return;
+    item.append(line,date);
+    box.appendChild(item);
+  });
+}
 
-      const usd = prompt("Enter new USD price:", tool.price_usd);
-      if (usd === null) return;
+$("applyWalletBtn").addEventListener("click",async()=>{
+  if(!selectedCustomer){
+    msg("walletActionMessage","Select a customer first.","error");
+    return;
+  }
 
-      const { error } = await supabaseClient
-        .from("tools")
+  const amount=Number($("walletAmount").value);
+  const action=$("walletAction").value;
+  const description=$("walletDescription").value.trim();
+
+  if(!Number.isFinite(amount)||amount<=0){
+    msg("walletActionMessage","Enter a valid amount.","error");
+    return;
+  }
+
+  if(!confirm(
+    (action==="credit"?"Add ":"Deduct ")+
+    amount+" "+(selectedCustomer.currency||"INR")+
+    " for "+selectedCustomer.email+"?"
+  ))return;
+
+  $("applyWalletBtn").disabled=true;
+  msg("walletActionMessage","Processing...");
+
+  try{
+    const {data,error}=await supabaseClient.rpc(
+      "rk_admin_adjust_wallet",
+      {
+        p_user_id:selectedCustomer.user_id,
+        p_amount:amount,
+        p_action:action,
+        p_description:description||null
+      }
+    );
+
+    if(error)throw error;
+
+    msg(
+      "walletActionMessage",
+      "Success! New balance: "+
+      money(data.new_balance,data.currency),
+      "success"
+    );
+
+    const {data:wallet,error:walletError}=await supabaseClient
+      .from("rk_wallet_accounts")
+      .select("balance,currency")
+      .eq("user_id",selectedCustomer.user_id)
+      .single();
+
+    if(walletError)throw walletError;
+
+    $("customerBalance").textContent=
+      money(wallet.balance,wallet.currency);
+
+    $("walletAmount").value="";
+    $("walletDescription").value="";
+    await loadTransactions(selectedCustomer.user_id);
+
+  }catch(e){
+    msg("walletActionMessage","Error: "+e.message,"error");
+  }finally{
+    $("applyWalletBtn").disabled=false;
+  }
+});
+
+// ADD TOOL
+$("addToolBtn").addEventListener("click",async()=>{
+  const name=$("toolName").value.trim();
+  const category=$("toolCategory").value;
+  const inr=Number($("priceINR").value||0);
+  const usd=Number($("priceUSD").value||0);
+
+  if(!name){
+    msg("toolMessage","Please enter Tool Name.","error");
+    return;
+  }
+
+  if(inr<0||usd<0){
+    msg("toolMessage","Prices cannot be negative.","error");
+    return;
+  }
+
+  const serviceType=
+    category==="Tool Rental"?"rental":
+    category==="File Services"?"file":
+    category==="Home Tools"?"home":"server";
+
+  msg("toolMessage","Saving...");
+
+  const {error}=await supabaseClient.from("tools").insert([{
+    name,
+    category,
+    price_inr:inr,
+    price_usd:usd,
+    description:$("toolDescription").value.trim(),
+    is_active:true,
+    service_type:serviceType,
+    otp_enabled:$("otpEnabled").checked,
+    credit_enabled:$("creditEnabled").checked,
+    quantity_enabled:$("quantityEnabled").checked,
+    username_required:$("usernameRequired").checked,
+    gmail_required:$("gmailRequired").checked,
+    credit_price:Number($("creditPrice").value||0),
+    min_quantity:Number($("minQuantity").value||1),
+    max_quantity:Number($("maxQuantity").value||1)
+  }]);
+
+  if(error){
+    msg("toolMessage","Error: "+error.message,"error");
+    return;
+  }
+
+  msg("toolMessage","Tool saved successfully!","success");
+
+  ["toolName","toolCategory","priceINR","priceUSD","toolDescription","creditPrice"]
+    .forEach(id=>$(id).value="");
+
+  ["otpEnabled","creditEnabled","quantityEnabled","usernameRequired","gmailRequired"]
+    .forEach(id=>$(id).checked=false);
+
+  $("minQuantity").value="1";
+  $("maxQuantity").value="1";
+
+  await loadTools();
+});
+
+// LOAD TOOLS
+async function loadTools(){
+  const list=$("toolsList");
+  list.textContent="Loading tools...";
+
+  const {data,error}=await supabaseClient
+    .from("tools").select("*").order("id",{ascending:false});
+
+  if(error){
+    list.textContent="Error: "+error.message;
+    return;
+  }
+
+  if(!data?.length){
+    list.textContent="No tools found.";
+    return;
+  }
+
+  list.innerHTML="";
+
+  data.forEach(tool=>{
+    const item=document.createElement("div");
+    item.className="result";
+
+    const title=document.createElement("h3");
+    title.textContent=tool.name||"Unnamed Tool";
+
+    const details=document.createElement("p");
+    details.textContent=
+      "Category: "+(tool.category||"N/A")+
+      " | INR: ₹"+(tool.price_inr??0)+
+      " | USD: $"+(tool.price_usd??0)+
+      " | "+(tool.is_active?"Active":"Inactive");
+
+    const edit=document.createElement("button");
+    edit.textContent="Edit Price";
+    edit.onclick=async()=>{
+      const inr=prompt("New INR price:",tool.price_inr);
+      if(inr===null)return;
+      const usd=prompt("New USD price:",tool.price_usd);
+      if(usd===null)return;
+
+      if(inr.trim()===""||usd.trim()===""||
+        !Number.isFinite(Number(inr))||
+        !Number.isFinite(Number(usd))||
+        Number(inr)<0||Number(usd)<0){
+        alert("Enter valid prices.");
+        return;
+      }
+
+      const {error}=await supabaseClient.from("tools")
         .update({
-          price_inr: Number(inr),
-          price_usd: Number(usd)
-        })
-        .eq("id", tool.id);
+          price_inr:Number(inr),
+          price_usd:Number(usd)
+        }).eq("id",tool.id);
 
-      if (error) alert(error.message);
+      if(error)alert(error.message);
       else loadTools();
     };
 
-    const toggleButton = document.createElement("button");
-    toggleButton.textContent = tool.is_active ? "Deactivate" : "Activate";
-    toggleButton.onclick = async () => {
-      const { error } = await supabaseClient
-        .from("tools")
-        .update({ is_active: !tool.is_active })
-        .eq("id", tool.id);
+    const toggle=document.createElement("button");
+    toggle.textContent=tool.is_active?"Deactivate":"Activate";
+    toggle.onclick=async()=>{
+      const {error}=await supabaseClient.from("tools")
+        .update({is_active:!tool.is_active}).eq("id",tool.id);
 
-      if (error) alert(error.message);
+      if(error)alert(error.message);
       else loadTools();
     };
 
-    const deleteButton = document.createElement("button");
-    deleteButton.textContent = "Delete Tool";
-    deleteButton.onclick = async () => {
-      if (!confirm("Are you sure you want to delete " + tool.name + "?")) return;
+    const remove=document.createElement("button");
+    remove.textContent="Delete Tool";
+    remove.onclick=async()=>{
+      if(!confirm("Delete "+tool.name+"?"))return;
 
-      const { error } = await supabaseClient
-        .from("tools")
-        .delete()
-        .eq("id", tool.id);
+      const {error}=await supabaseClient.from("tools")
+        .delete().eq("id",tool.id);
 
-      if (error) alert(error.message);
+      if(error)alert(error.message);
       else loadTools();
     };
 
-    item.append(heading, details, editButton, toggleButton, deleteButton);
+    item.append(title,details,edit,toggle,remove);
     list.appendChild(item);
   });
 }
-async function loadOrders() {
-  const list = document.getElementById("ordersList");
-  list.textContent = "Loading orders...";
 
-  const { data, error } = await supabaseClient
-    .from("orders")
-    .select("*")
-    .order("id", { ascending: false });
+// LOAD ORDERS
+async function loadOrders(){
+  const list=$("ordersList");
+  list.textContent="Loading orders...";
 
-  if (error) {
-    list.textContent = "Error: " + error.message;
+  const {data,error}=await supabaseClient
+    .from("orders").select("*").order("id",{ascending:false});
+
+  if(error){
+    list.textContent="Error: "+error.message;
     return;
   }
 
-  if (!data || data.length === 0) {
-    list.textContent = "No orders found.";
+  if(!data?.length){
+    list.textContent="No orders found.";
     return;
   }
 
-  list.innerHTML = "";
+  list.innerHTML="";
 
-  data.forEach(order => {
-    const item = document.createElement("div");
-    item.className = "card";
+  data.forEach(order=>{
+    const item=document.createElement("div");
+    item.className="result";
 
-    const details = document.createElement("p");
-    details.textContent =
-      "Order ID: " + order.id +
-      " | Customer: " + (order.Customer_name || "N/A") +
-      " | Tool: " + (order.Tool_name || "N/A") +
-      " | Amount: " + (order.Currency || "") + " " + (order.Amount || 0);
+    const detail=document.createElement("p");
+    detail.textContent=
+      "Order ID: "+order.id+
+      " | Customer: "+(order.customer_name||"N/A")+
+      " | Tool: "+(order.tool_name||"N/A")+
+      " | Amount: "+(order.currency||"")+" "+(order.amount??0)+
+      " | Status: "+(order.status||"N/A");
 
-    item.appendChild(details);
+    item.appendChild(detail);
     list.appendChild(item);
   });
 }
 </script>
-
 </body>
 </html>
