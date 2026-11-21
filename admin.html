@@ -57,14 +57,34 @@ button{background:#f58220;color:#111;font-weight:bold;cursor:pointer}
 
 <input id="toolName" placeholder="Tool Name">
 <input id="toolCategory" placeholder="Category">
+
 <input id="priceINR" type="number" placeholder="Price in INR">
 <input id="priceUSD" type="number" placeholder="Price in USD">
+
 <input id="toolDescription" placeholder="Tool Description">
 
+<h3>Service Settings</h3>
+
+<label><input type="checkbox" id="otpEnabled"> OTP Based</label>
+
+<label><input type="checkbox" id="creditEnabled"> Credit Based</label>
+
+<label><input type="checkbox" id="quantityEnabled"> Quantity Required</label>
+
+<label><input type="checkbox" id="usernameRequired"> Username Required</label>
+
+<label><input type="checkbox" id="gmailRequired"> Gmail Required</label>
+
+<input id="creditPrice" type="number" placeholder="Price Per Credit">
+
+<input id="minQuantity" type="number" placeholder="Minimum Quantity" value="1">
+
+<input id="maxQuantity" type="number" placeholder="Maximum Quantity" value="1">
+
 <button type="button" id="addToolBtn">Save Tool</button>
+
 <p id="toolMessage"></p>
 </section>
-
 <section id="edit" class="card">
 <h2>Edit Tool</h2>
 <p>Tool editing will be connected next.</p>
@@ -169,13 +189,24 @@ startAdmin();
     document.getElementById("toolsList").textContent = "";
   }
 });
-  document.getElementById("addToolBtn").addEventListener("click", async () => {
+document.getElementById("addToolBtn").addEventListener("click", async () => {
   const msg = document.getElementById("toolMessage");
+
   const name = document.getElementById("toolName").value.trim();
   const category = document.getElementById("toolCategory").value.trim();
   const inr = Number(document.getElementById("priceINR").value || 0);
   const usd = Number(document.getElementById("priceUSD").value || 0);
   const description = document.getElementById("toolDescription").value.trim();
+
+  const otp = document.getElementById("otpEnabled").checked;
+  const credit = document.getElementById("creditEnabled").checked;
+  const quantity = document.getElementById("quantityEnabled").checked;
+  const username = document.getElementById("usernameRequired").checked;
+  const gmail = document.getElementById("gmailRequired").checked;
+
+  const creditPrice = Number(document.getElementById("creditPrice").value || 0);
+  const minQty = Number(document.getElementById("minQuantity").value || 1);
+  const maxQty = Number(document.getElementById("maxQuantity").value || 1);
 
   if (!name) {
     msg.textContent = "Please enter Tool Name.";
@@ -192,7 +223,16 @@ startAdmin();
       price_inr: inr,
       price_usd: usd,
       description: description,
-      is_active: true
+      is_active: true,
+      service_type: "server",
+      otp_enabled: otp,
+      credit_enabled: credit,
+      quantity_enabled: quantity,
+      username_required: username,
+      gmail_required: gmail,
+      credit_price: creditPrice,
+      min_quantity: minQty,
+      max_quantity: maxQty
     }]);
 
   if (error) {
@@ -201,11 +241,24 @@ startAdmin();
   }
 
   msg.textContent = "Tool saved successfully!";
+
   document.getElementById("toolName").value = "";
   document.getElementById("toolCategory").value = "";
   document.getElementById("priceINR").value = "";
   document.getElementById("priceUSD").value = "";
   document.getElementById("toolDescription").value = "";
+
+  document.getElementById("otpEnabled").checked = false;
+  document.getElementById("creditEnabled").checked = false;
+  document.getElementById("quantityEnabled").checked = false;
+  document.getElementById("usernameRequired").checked = false;
+  document.getElementById("gmailRequired").checked = false;
+
+  document.getElementById("creditPrice").value = "";
+  document.getElementById("minQuantity").value = "1";
+  document.getElementById("maxQuantity").value = "1";
+
+  loadTools();
 });
   async function loadTools() {
   const list = document.getElementById("toolsList");
