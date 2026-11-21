@@ -4,117 +4,215 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RK SOFTWARE - Server Services</title>
+
 <style>
-body{font-family:Arial,sans-serif;background:#101827;color:white;margin:0;padding:20px}
-.container{max-width:600px;margin:40px auto;background:#1e293b;padding:25px;border-radius:12px}
-h1,h2{text-align:center}
-input,select,button{width:100%;padding:13px;margin:9px 0;box-sizing:border-box;border-radius:7px;border:1px solid #64748b;font-size:16px}
-button{background:#f59e0b;color:#111827;font-weight:bold;border:0;cursor:pointer}
-.switch{text-align:center;color:#fbbf24;cursor:pointer}
-#services{display:none}
-.tool{background:#334155;padding:15px;margin:12px 0;border-radius:8px}
-#message{text-align:center;color:#fbbf24}
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #101827;
+  color: white;
+}
+
+.container {
+  max-width: 850px;
+  margin: 25px auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  margin: 15px 0;
+  border-radius: 12px;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 13px;
+  margin: 8px 0;
+  border-radius: 7px;
+  border: 1px solid #64748b;
+  font-size: 15px;
+}
+
+button {
+  background: #f59e0b;
+  color: #111827;
+  font-weight: bold;
+  border: 0;
+  cursor: pointer;
+}
+
+.secondary {
+  background: #475569;
+  color: white;
+}
+
+.hidden { display: none !important; }
+
+.tool {
+  background: #334155;
+  padding: 16px;
+  border-radius: 9px;
+  margin: 12px 0;
+}
+
+#message {
+  color: #fbbf24;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.switch {
+  color: #fbbf24;
+  text-align: center;
+  cursor: pointer;
+  padding: 12px;
+}
+
+.muted { color: #cbd5e1; }
 </style>
 </head>
+
 <body>
-
 <div class="container">
-<h1>RK SOFTWARE</h1>
-<h2>Customer Account</h2>
 
-<div id="authBox">
-<h3 id="formTitle">Register</h3>
+  <div class="header">
+    <h1>RK SOFTWARE</h1>
+    <button id="accountBtn" style="width:auto">Login / Register</button>
+  </div>
 
-<input id="customerName" placeholder="Your Name">
-<input id="email" type="email" placeholder="Email Address">
-<input id="password" type="password" placeholder="Password">
+  <div class="card">
+    <h2>Server Services</h2>
+    <p class="muted">Explore our available server tools.</p>
+    <select id="guestCurrency">
+      <option value="INR">INR ₹</option>
+      <option value="USD">USD $</option>
+    </select>
+    <input id="searchTool" placeholder="Search Server Tools...">
+    <div id="toolsList">Loading tools...</div>
+  </div>
 
-<select id="currency">
-<option value="INR">INR ₹</option>
-<option value="USD">USD $</option>
-</select>
+  <div class="card hidden" id="authBox">
+    <h2 id="formTitle">Customer Login</h2>
 
-<button id="submitBtn">Register</button>
-<p class="switch" id="switchBtn">Already have an account? Login</p>
-<p id="message"></p>
-</div>
+    <input id="customerName" placeholder="Your Name" class="hidden">
+    <input id="email" type="email" placeholder="Email Address">
+    <input id="password" type="password" placeholder="Password">
 
-<div id="services">
-<h2>Server Services</h2>
-<p id="welcome"></p>
-<input id="searchTool" placeholder="Search tools...">
-<div id="toolsList">Loading tools...</div>
-<button id="logoutBtn">Logout</button>
-</div>
+    <select id="registerCurrency" class="hidden">
+      <option value="INR">INR ₹</option>
+      <option value="USD">USD $</option>
+    </select>
+
+    <button id="submitBtn">Login</button>
+    <p class="switch" id="switchBtn">New customer? Register</p>
+    <p id="message"></p>
+  </div>
+
+  <div class="card hidden" id="customerBox">
+    <h3 id="welcome"></h3>
+    <p class="muted">You are logged in. Actual tool prices are now visible.</p>
+    <button class="secondary" id="logoutBtn">Logout</button>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 
 <script>
-let isRegister = true;
+let isRegister = false;
+let currentUser = null;
+let currentCurrency = "INR";
+let customerTools = [];
 
 const authBox = document.getElementById("authBox");
-const services = document.getElementById("services");
+const customerBox = document.getElementById("customerBox");
 const message = document.getElementById("message");
+const toolsList = document.getElementById("toolsList");
 
-document.getElementById("switchBtn").onclick = () => {
-  isRegister = !isRegister;
-  document.getElementById("formTitle").textContent = isRegister ? "Register" : "Login";
-  document.getElementById("submitBtn").textContent = isRegister ? "Register" : "Login";
-  document.getElementById("switchBtn").textContent = isRegister
-    ? "Already have an account? Login"
-    : "New customer? Register";
-  document.getElementById("customerName").style.display = isRegister ? "block" : "none";
-  document.getElementById("currency").style.display = isRegister ? "block" : "none";
+function showAuth() {
+  authBox.classList.remove("hidden");
   message.textContent = "";
-};
+  document.getElementById("formTitle").textContent =
+    isRegister ? "Customer Registration" : "Customer Login";
 
-async function showServices(user) {
-  if (!user) return;
+  document.getElementById("submitBtn").textContent =
+    isRegister ? "Register" : "Login";
 
-  authBox.style.display = "none";
-  services.style.display = "block";
+  document.getElementById("customerName").classList.toggle("hidden", !isRegister);
+  document.getElementById("registerCurrency").classList.toggle("hidden", !isRegister);
 
-  const currency = user.user_metadata?.currency || "INR";
-  document.getElementById("welcome").textContent =
-    "Welcome " + (user.user_metadata?.full_name || user.email) +
-    " | Currency: " + currency;
-
-  await loadCustomerTools(currency);
+  document.getElementById("switchBtn").textContent =
+    isRegister ? "Already registered? Login" : "New customer? Register";
 }
 
-async function loadCustomerTools(currency) {
-  const list = document.getElementById("toolsList");
-  list.textContent = "Loading tools...";
+function updateAccountView() {
+  if (currentUser) {
+    authBox.classList.add("hidden");
+    customerBox.classList.remove("hidden");
 
-  const { data, error } = await supabaseClient
-    .from("tools")
-    .select("*")
-    .eq("is_active", true)
-    .eq("category", "Server Services")
-    .order("id", { ascending: false });
+    document.getElementById("welcome").textContent =
+      "Welcome " + (currentUser.user_metadata?.full_name || currentUser.email) +
+      " | Currency: " + currentCurrency;
+  } else {
+    customerBox.classList.add("hidden");
+    authBox.classList.add("hidden");
+  }
+}
+
+async function loadTools() {
+  toolsList.textContent = "Loading tools...";
+
+  let query;
+
+  if (currentUser) {
+    query = supabaseClient
+      .from("tools")
+      .select("*")
+      .eq("is_active", true)
+      .eq("category", "Server Services")
+      .order("id", { ascending: false });
+  } else {
+    query = supabaseClient
+      .from("public_server_tools")
+      .select("*")
+      .order("id", { ascending: false });
+  }
+
+  const { data, error } = await query;
 
   if (error) {
-    list.textContent = "Error: " + error.message;
+    toolsList.textContent = "Error: " + error.message;
     return;
   }
 
-  window.customerTools = data || [];
-  renderCustomerTools(currency);
+  customerTools = data || [];
+  renderTools();
 }
 
-function renderCustomerTools(currency) {
-  const list = document.getElementById("toolsList");
+function renderTools() {
   const search = document.getElementById("searchTool").value.toLowerCase();
 
-  list.innerHTML = "";
-  const filtered = (window.customerTools || []).filter(tool =>
-    tool.name.toLowerCase().includes(search)
+  toolsList.innerHTML = "";
+
+  const filtered = customerTools.filter(tool =>
+    (tool.name || "").toLowerCase().includes(search)
   );
 
   if (!filtered.length) {
-    list.textContent = "No tools found.";
+    toolsList.textContent = "No Server Tools found.";
     return;
   }
 
@@ -126,38 +224,63 @@ function renderCustomerTools(currency) {
     name.textContent = tool.name;
 
     const price = document.createElement("p");
-    price.textContent = currency === "USD"
-      ? "Price: $" + tool.price_usd
-      : "Price: ₹" + tool.price_inr;
+
+    if (!currentUser) {
+      price.textContent = currentCurrency === "USD"
+        ? "Price: $0"
+        : "Price: ₹0";
+    } else {
+      price.textContent = currentCurrency === "USD"
+        ? "Price: $" + (tool.price_usd ?? 0)
+        : "Price: ₹" + (tool.price_inr ?? 0);
+    }
 
     const description = document.createElement("p");
     description.textContent = tool.description || "";
 
     item.append(name, price, description);
-    list.appendChild(item);
+    toolsList.appendChild(item);
   });
 }
 
-document.getElementById("searchTool").addEventListener("input", async () => {
-  const { data } = await supabaseClient.auth.getUser();
-  if (data.user) {
-    renderCustomerTools(data.user.user_metadata?.currency || "INR");
+document.getElementById("accountBtn").addEventListener("click", () => {
+  isRegister = false;
+  showAuth();
+});
+
+document.getElementById("switchBtn").addEventListener("click", () => {
+  isRegister = !isRegister;
+  showAuth();
+});
+
+document.getElementById("guestCurrency").addEventListener("change", event => {
+  if (!currentUser) {
+    currentCurrency = event.target.value;
+    renderTools();
   }
 });
+
+document.getElementById("searchTool").addEventListener("input", renderTools);
 
 document.getElementById("submitBtn").addEventListener("click", async () => {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
   const name = document.getElementById("customerName").value.trim();
-  const currency = document.getElementById("currency").value;
+  const currency = document.getElementById("registerCurrency").value;
 
   if (!email || !password) {
-    message.textContent = "Please enter email and password.";
+    message.textContent = "Please enter Email and Password.";
+    return;
+  }
+
+  if (isRegister && !name) {
+    message.textContent = "Please enter your Name.";
     return;
   }
 
   message.textContent = "Please wait...";
-  document.getElementById("submitBtn").disabled = true;
+  const button = document.getElementById("submitBtn");
+  button.disabled = true;
 
   try {
     if (isRegister) {
@@ -169,7 +292,8 @@ document.getElementById("submitBtn").addEventListener("click", async () => {
             full_name: name,
             currency: currency
           },
-          emailRedirectTo: "https://rohitash701.github.io/RK-software/server.html"
+          emailRedirectTo:
+            "https://rohitash701.github.io/RK-software/server.html"
         }
       });
 
@@ -178,6 +302,7 @@ document.getElementById("submitBtn").addEventListener("click", async () => {
       message.textContent = data.session
         ? "Registration successful!"
         : "Registration successful! Please verify your email, then Login.";
+
     } else {
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email,
@@ -185,36 +310,59 @@ document.getElementById("submitBtn").addEventListener("click", async () => {
       });
 
       if (error) throw error;
-      await showServices(data.user);
+
+      currentUser = data.user;
+      currentCurrency = currentUser.user_metadata?.currency || "INR";
+
+      document.getElementById("guestCurrency").value = currentCurrency;
+
+      updateAccountView();
+      await loadTools();
     }
   } catch (error) {
     message.textContent = error.message;
   } finally {
-    document.getElementById("submitBtn").disabled = false;
+    button.disabled = false;
   }
 });
 
 document.getElementById("logoutBtn").addEventListener("click", async () => {
-  await supabaseClient.auth.signOut();
-  services.style.display = "none";
-  authBox.style.display = "block";
-  message.textContent = "You have logged out.";
-});
-
-async function startCustomerPage() {
-  const { data, error } = await supabaseClient.auth.getSession();
+  const { error } = await supabaseClient.auth.signOut();
 
   if (error) {
     message.textContent = error.message;
     return;
   }
 
-  if (data.session?.user) {
-    await showServices(data.session.user);
+  currentUser = null;
+  currentCurrency = document.getElementById("guestCurrency").value;
+  updateAccountView();
+  await loadTools();
+});
+
+async function startPage() {
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (error) {
+    toolsList.textContent = error.message;
+    return;
   }
+
+  currentUser = data.session?.user || null;
+
+  if (currentUser) {
+    currentCurrency = currentUser.user_metadata?.currency || "INR";
+    document.getElementById("guestCurrency").value = currentCurrency;
+  } else {
+    currentCurrency = document.getElementById("guestCurrency").value;
+  }
+
+  updateAccountView();
+  await loadTools();
 }
 
-startCustomerPage();
+startPage();
 </script>
+
 </body>
 </html>
