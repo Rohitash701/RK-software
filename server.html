@@ -361,7 +361,15 @@ async function startPage() {
   await loadTools();
 }
 
-startPage();
+startPage().then(() => {
+  if (window.location.hash === "#login") {
+    isRegister = false;
+    showAuth();
+    document.getElementById("authBox").scrollIntoView({
+      behavior: "smooth"
+    });
+  }
+});
 </script>
 
 </body>
