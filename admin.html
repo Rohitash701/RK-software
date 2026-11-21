@@ -1,335 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RK SOFTWARE Admin Panel</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#111;color:#fff;font-family:Arial,sans-serif}
-header{background:#f58220;color:#111;padding:20px;font-size:23px;font-weight:bold}
-nav{display:flex;flex-wrap:wrap;background:#222;padding:10px;gap:8px}
-nav a{color:white;text-decoration:none;padding:10px;background:#333;border-radius:5px}
-main{padding:18px}
-h2{color:#ff8a24}
-.card{background:#222;border:1px solid #444;border-radius:10px;padding:18px;margin:12px 0}
-input,button{padding:12px;width:100%;margin:7px 0;border-radius:6px;border:0}
-button{background:#f58220;color:#111;font-weight:bold;cursor:pointer}
-#adminArea{display:none}
-#message{color:#ff8a24;white-space:pre-wrap}
-</style>
-</head>
-<body>
+let currency = "INR";
 
-<header>RK SOFTWARE — ADMIN PANEL</header>
+const symbol = () => currency === "INR" ? "₹" : "$";
 
-<main>
-<section id="loginBox" class="card">
-<h2>Admin Login</h2>
-<input id="email" type="email" placeholder="Admin Email" autocomplete="username">
-<input id="password" type="password" placeholder="Password" autocomplete="current-password">
-<button id="loginBtn" type="button">Login</button>
-<p id="message"></p>
-</section>
-
-<div id="adminArea">
-<nav>
-<a href="#dashboard">Dashboard</a>
-<a href="#add">Add Tool</a>
-<a href="#edit">Edit Tool</a>
-<a href="#orders">Orders</a>
-<a href="#settings">Settings</a>
-</nav>
-
-<main>
-<section id="dashboard" class="card">
-<h2>Dashboard</h2>
-<p>Welcome to RK SOFTWARE Admin Panel.</p>
-<p>Admin Login Successful.</p>
-<p>Total Tools: 0</p>
-<p>Total Orders: 0</p>
-</section><section id="manageTools" class="card">
-<h2>Manage All Tools</h2>
-<div id="toolsList">Loading tools...</div>
-</section>
-<section id="add" class="card">
-<h2>Add New Tool</h2>
-
-<input id="toolName" placeholder="Tool Name">
-<input id="toolCategory" placeholder="Category">
-<input id="priceINR" type="number" placeholder="Price in INR">
-<input id="priceUSD" type="number" placeholder="Price in USD">
-<input id="toolDescription" placeholder="Tool Description">
-
-<button type="button" id="addToolBtn">Save Tool</button>
-<p id="toolMessage"></p>
-</section>
-
-<section id="edit" class="card">
-<h2>Edit Tool</h2>
-<p>Tool editing will be connected next.</p>
-</section>
-
-<section id="orders" class="card">
-<h2>Customer Orders</h2>
-<div id="ordersList">Loading orders...</div>
-</section>
-
-<section id="settings" class="card">
-<h2>Settings</h2>
-<p>RK SOFTWARE Website Settings</p>
-<button id="logoutBtn" type="button">Logout</button>
-</section>
-</main>
-</div>
-</main>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase.js"></script>
-
-<script>
-const loginBox = document.getElementById("loginBox");
-const adminArea = document.getElementById("adminArea");
-const message = document.getElementById("message");
-const loginBtn = document.getElementById("loginBtn");
-
-async function checkAdmin(user) {
-  if (!user) {
-    loginBox.style.display = "block";
-    adminArea.style.display = "none";
-    return false;
-  }
-
-  const { data, error } = await supabaseClient.rpc("is_admin");
-
-  if (error || data !== true) {
-    await supabaseClient.auth.signOut();
-    loginBox.style.display = "block";
-    adminArea.style.display = "none";
-    message.textContent = "Access denied. This account is not an admin.";
-    return false;
-  }
-
-  loginBox.style.display = "none";
-  adminArea.style.display = "block";
-  message.textContent = "";
-
-  await loadTools();
-  await loadOrders();
-
-  return true;
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
 }
 
-loginBtn.addEventListener("click", async () => {
-  message.textContent = "Please wait...";
-  loginBtn.disabled = true;
+function card(p) {
+  const price = currency === "INR"
+    ? p.price_inr
+    : p.price_usd;
 
-  try {
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
-
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (error) throw error;
-
-    await checkAdmin(data.user);
-  } catch (error) {
-    message.textContent = error.message;
-  } finally {
-    loginBtn.disabled = false;
-  }
-});
-
-document.getElementById("logoutBtn").addEventListener("click", async () => {
-  await supabaseClient.auth.signOut();
-  loginBox.style.display = "block";
-  adminArea.style.display = "none";
-  document.getElementById("password").value = "";
-  message.textContent = "You have logged out.";
-});
-
-async function startAdmin() {
-  const { data, error } = await supabaseClient.auth.getSession();
-
-  if (error) {
-    message.textContent = error.message;
-    return;
-  }
-
-  await checkAdmin(data.session?.user || null);
+  return `
+    <article class="product">
+      <div class="product-image">
+        ${escapeHTML(p.name)}
+      </div>
+      <div class="product-body">
+        <h3>${escapeHTML(p.name)}</h3>
+        <div class="product-meta">
+          <span>${escapeHTML(p.category)}</span>
+          <b class="price">${symbol()}${escapeHTML(price ?? 0)}</b>
+        </div>
+        <div class="product-meta" style="margin-top:9px">
+          <span>Description</span>
+          <span>${escapeHTML(p.description || "Details coming soon")}</span>
+        </div>
+        <button type="button" onclick="alert('Please contact RK SOFTWARE support for details.')">
+          View Details
+        </button>
+      </div>
+    </article>
+  `;
 }
 
-startAdmin();
-  supabaseClient.auth.onAuthStateChange((event, session) => {
-  if (event === "SIGNED_IN" && session) loadTools();
-  if (event === "SIGNED_OUT") {
-    document.getElementById("toolsList").textContent = "";
-  }
-});
-  document.getElementById("addToolBtn").addEventListener("click", async () => {
-  const msg = document.getElementById("toolMessage");
-  const name = document.getElementById("toolName").value.trim();
-  const category = document.getElementById("toolCategory").value.trim();
-  const inr = Number(document.getElementById("priceINR").value || 0);
-  const usd = Number(document.getElementById("priceUSD").value || 0);
-  const description = document.getElementById("toolDescription").value.trim();
+async function loadTools() {
+  const productGrid = document.getElementById("productGrid");
+  const recentGrid = document.getElementById("recentGrid");
 
-  if (!name) {
-    msg.textContent = "Please enter Tool Name.";
-    return;
-  }
-
-  msg.textContent = "Saving...";
-
-  const { error } = await supabaseClient
-    .from("tools")
-    .insert([{
-      name: name,
-      category: category,
-      price_inr: inr,
-      price_usd: usd,
-      description: description,
-      is_active: true
-    }]);
-
-  if (error) {
-    msg.textContent = "Error: " + error.message;
-    return;
-  }
-
-  msg.textContent = "Tool saved successfully!";
-  document.getElementById("toolName").value = "";
-  document.getElementById("toolCategory").value = "";
-  document.getElementById("priceINR").value = "";
-  document.getElementById("priceUSD").value = "";
-  document.getElementById("toolDescription").value = "";
-});
-  async function loadTools() {
-  const list = document.getElementById("toolsList");
-  list.textContent = "Loading tools...";
+  productGrid.textContent = "Loading tools...";
+  recentGrid.textContent = "Loading tools...";
 
   const { data, error } = await supabaseClient
     .from("tools")
     .select("*")
+    .eq("is_active", true)
     .order("id", { ascending: false });
 
   if (error) {
-    list.textContent = "Error: " + error.message;
+    productGrid.textContent = "Error: " + error.message;
+    recentGrid.textContent = "Error: " + error.message;
     return;
   }
 
   if (!data || data.length === 0) {
-    list.textContent = "No tools found.";
+    productGrid.textContent = "No tools available yet.";
+    recentGrid.textContent = "No tools available yet.";
     return;
   }
 
-  list.innerHTML = "";
-
-  data.forEach(tool => {
-    const item = document.createElement("div");
-    item.className = "card";
-
-    const heading = document.createElement("h3");
-    heading.textContent = tool.name;
-
-    const details = document.createElement("p");
-    details.textContent =
-      "INR: ₹" + tool.price_inr +
-      " | USD: $" + tool.price_usd +
-      " | " + (tool.is_active ? "Active" : "Inactive");
-
-    const editButton = document.createElement("button");
-    editButton.textContent = "Edit Price";
-    editButton.onclick = async () => {
-      const inr = prompt("Enter new INR price:", tool.price_inr);
-      if (inr === null) return;
-
-      const usd = prompt("Enter new USD price:", tool.price_usd);
-      if (usd === null) return;
-
-      const { error } = await supabaseClient
-        .from("tools")
-        .update({
-          price_inr: Number(inr),
-          price_usd: Number(usd)
-        })
-        .eq("id", tool.id);
-
-      if (error) alert(error.message);
-      else loadTools();
-    };
-
-    const toggleButton = document.createElement("button");
-    toggleButton.textContent = tool.is_active ? "Deactivate" : "Activate";
-    toggleButton.onclick = async () => {
-      const { error } = await supabaseClient
-        .from("tools")
-        .update({ is_active: !tool.is_active })
-        .eq("id", tool.id);
-
-      if (error) alert(error.message);
-      else loadTools();
-    };
-
-    const deleteButton = document.createElement("button");
-    deleteButton.textContent = "Delete Tool";
-    deleteButton.onclick = async () => {
-      if (!confirm("Are you sure you want to delete " + tool.name + "?")) return;
-
-      const { error } = await supabaseClient
-        .from("tools")
-        .delete()
-        .eq("id", tool.id);
-
-      if (error) alert(error.message);
-      else loadTools();
-    };
-
-    item.append(heading, details, editButton, toggleButton, deleteButton);
-    list.appendChild(item);
-  });
+  productGrid.innerHTML = data.slice(0, 4).map(card).join("");
+  recentGrid.innerHTML = data.slice(4).map(card).join("");
 }
-  async function loadOrders() {
-  const list = document.getElementById("ordersList");
-  list.textContent = "Loading orders...";
 
-  const { data, error } = await supabaseClient
-    .from("orders")
-    .select("*")
-    .order("id", { ascending: false });
+document.getElementById("currency").addEventListener("change", e => {
+  currency = e.target.value;
+  loadTools();
+});
 
-  if (error) {
-    list.textContent = "Error: " + error.message;
-    return;
-  }
+document.getElementById("menuToggle").addEventListener("click", () => {
+  document.getElementById("mainNav").classList.toggle("open");
+});
 
-  if (!data || data.length === 0) {
-    list.textContent = "No orders found.";
-    return;
-  }
+document.getElementById("year").textContent = new Date().getFullYear();
 
-  list.innerHTML = "";
-
-  data.forEach(order => {
-    const item = document.createElement("div");
-    item.className = "card";
-
-    const details = document.createElement("p");
-    details.textContent =
-      "Order ID: " + order.id +
-      " | Customer: " + (order.customer_name || "N/A") +
-      " | Tool: " + order.tool_name +
-      " | Amount: " + order.currency + " " + order.amount +
-      " | Status: " + order.status;
-
-    item.appendChild(details);
-    list.appendChild(item);
-  });
-}
-</script>
-
-</body>
-</html>
+loadTools();
