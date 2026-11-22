@@ -50,6 +50,11 @@ label.check input{width:auto;margin:0}
 .photo-preview{width:130px;height:130px;object-fit:contain;background:#111;border:1px solid #555;border-radius:8px;margin:8px 0;display:none}
 .tool-photo{width:100px;height:100px;object-fit:contain;background:#111;border:1px solid #555;border-radius:8px;margin:5px 0}
 .photo-placeholder{width:100px;height:100px;border:1px dashed #666;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#888;font-size:12px;margin:5px 0}
+.order-details{background:#202020;padding:10px;border-radius:7px;margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}
+.status{display:inline-block;padding:5px 9px;border-radius:5px;background:#444;margin:4px 0;font-size:12px}
+.status.failed{background:#812b2b}
+.status.done{background:#17633c}
+.status.processing{background:#79521d}
 @media(max-width:760px){
 .sidebar{position:fixed;z-index:40;top:62px;bottom:0;left:0;width:280px;max-width:85vw;transform:translateX(-110%);transition:transform .2s;overflow-y:auto}
 .sidebar.open{transform:translateX(0)}
@@ -153,13 +158,11 @@ label.check input{width:auto;margin:0}
 <input id="priceINR" type="number" min="0" placeholder="Price INR">
 <input id="priceUSD" type="number" min="0" placeholder="Price USD">
 <textarea id="toolDescription" placeholder="Description"></textarea>
-
 <h3>Tool Photo (Optional)</h3>
 <label class="field-label" for="toolPhoto">Upload Tool Photo</label>
 <input id="toolPhoto" type="file" accept="image/png,image/jpeg,image/webp">
 <img id="toolPhotoPreview" class="photo-preview" alt="Tool photo preview">
 <p class="muted">PNG, JPG or WEBP. Maximum size 5 MB. Photo is optional.</p>
-
 <h3>Service Options</h3>
 <label class="check"><input type="checkbox" id="otpEnabled"> OTP Required</label>
 <label class="check"><input type="checkbox" id="creditEnabled"> Credit Based</label>
@@ -185,7 +188,9 @@ label.check input{width:auto;margin:0}
 <section class="page" id="page-orders">
 <div class="card">
 <h2>Orders Management</h2>
+<p class="muted">Update order status, delivery result and supplier reference. Failed orders are refunded through the secure database function.</p>
 <button class="action" id="refreshOrdersBtn">Refresh Orders</button>
+<p id="ordersMessage" class="message"></p>
 <div id="ordersList"></div>
 </div>
 </section>
@@ -493,7 +498,7 @@ async function loadCustomers(){
     walletBtn.onclick=()=>{
       $("walletSearch").value=customer.customer_id;
       showPage("dashboard");
-      walletSearch().then(()=>selectWalletCustomer(customer));
+      selectWalletCustomer(customer);
     };
     const blockBtn=document.createElement("button");
     blockBtn.className="small "+(customer.is_blocked?"success":"danger");
@@ -529,29 +534,13 @@ function validPhoto(file){
 async function uploadToolPhoto(file){
   const validation=validPhoto(file);
   if(validation)throw new Error(validation);
-
-  const extension={
-    "image/png":"png",
-    "image/jpeg":"jpg",
-    "image/webp":"webp"
-  }[file.type];
-
+  const extension={"image/png":"png","image/jpeg":"jpg","image/webp":"webp"}[file.type];
   const filePath="tools/"+Date.now()+"-"+Math.random().toString(36).slice(2)+"."+extension;
-
-  const {error}=await supabaseClient.storage
-    .from("tool-images")
-    .upload(filePath,file,{
-      cacheControl:"3600",
-      upsert:false,
-      contentType:file.type
-    });
-
+  const {error}=await supabaseClient.storage.from("tool-images").upload(filePath,file,{
+    cacheControl:"3600",upsert:false,contentType:file.type
+  });
   if(error)throw error;
-
-  const {data}=supabaseClient.storage
-    .from("tool-images")
-    .getPublicUrl(filePath);
-
+  const {data}=supabaseClient.storage.from("tool-images").getPublicUrl(filePath);
   if(!data?.publicUrl)throw new Error("Could not create photo URL.");
   return data.publicUrl;
 }
@@ -560,20 +549,10 @@ $("toolPhoto").addEventListener("change",()=>{
   const file=$("toolPhoto").files[0];
   selectedPhotoFile=null;
   $("toolPhotoPreview").style.display="none";
-
-  if(previewUrl){
-    URL.revokeObjectURL(previewUrl);
-    previewUrl=null;
-  }
+  if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}
   if(!file)return;
-
   const error=validPhoto(file);
-  if(error){
-    showMessage("toolMessage",error,"bad");
-    $("toolPhoto").value="";
-    return;
-  }
-
+  if(error){showMessage("toolMessage",error,"bad");$("toolPhoto").value="";return;}
   selectedPhotoFile=file;
   previewUrl=URL.createObjectURL(file);
   $("toolPhotoPreview").src=previewUrl;
@@ -587,202 +566,221 @@ $("addToolBtn").onclick=async()=>{
   const category=$("toolCategory").value;
   const inr=Number($("priceINR").value||0);
   const usd=Number($("priceUSD").value||0);
-
-  if(!name||!category){
-    showMessage("toolMessage","Enter tool name and category.","bad");return;
-  }
-  if(inr<0||usd<0){
-    showMessage("toolMessage","Price cannot be negative.","bad");return;
-  }
+  if(!name||!category){showMessage("toolMessage","Enter tool name and category.","bad");return;}
+  if(inr<0||usd<0){showMessage("toolMessage","Price cannot be negative.","bad");return;}
   if(Number($("minQuantity").value)>Number($("maxQuantity").value)){
     showMessage("toolMessage","Maximum quantity must be greater than minimum.","bad");return;
   }
-
   const serviceType=category==="Tool Rental"?"rental":
     category==="File Services"?"file":
     category==="Home Tools"?"home":"server";
-
   $("addToolBtn").disabled=true;
   showMessage("toolMessage","Saving tool...");
-
   try{
     let imageUrl=null;
     if(selectedPhotoFile){
       showMessage("toolMessage","Uploading tool photo...");
       imageUrl=await uploadToolPhoto(selectedPhotoFile);
     }
-
     const {error}=await supabaseClient.from("tools").insert([{
       name,category,price_inr:inr,price_usd:usd,
       description:$("toolDescription").value.trim(),
-      image_url:imageUrl,
-      is_active:true,service_type:serviceType,
+      image_url:imageUrl,is_active:true,service_type:serviceType,
       otp_enabled:$("otpEnabled").checked,
       credit_enabled:$("creditEnabled").checked,
       quantity_enabled:$("quantityEnabled").checked,
       username_required:$("usernameRequired").checked,
-      gmail_required:$("gmailRequired").checked,
+      email_required:$("gmailRequired").checked,
       credit_price:Number($("creditPrice").value||0),
       min_quantity:Number($("minQuantity").value||1),
       max_quantity:Number($("maxQuantity").value||1)
     }]);
-
     if(error)throw error;
-
     showMessage("toolMessage","Tool added successfully.","good");
-
     ["toolName","priceINR","priceUSD","toolDescription","creditPrice"].forEach(id=>$(id).value="");
     $("toolCategory").value="";
     ["otpEnabled","creditEnabled","quantityEnabled","usernameRequired","gmailRequired"].forEach(id=>$(id).checked=false);
-    $("minQuantity").value="1";
-    $("maxQuantity").value="1";
-    $("toolPhoto").value="";
-    $("toolPhotoPreview").style.display="none";
-    $("toolPhotoPreview").removeAttribute("src");
-    selectedPhotoFile=null;
+    $("minQuantity").value="1";$("maxQuantity").value="1";
+    $("toolPhoto").value="";$("toolPhotoPreview").style.display="none";
+    $("toolPhotoPreview").removeAttribute("src");selectedPhotoFile=null;
     if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}
-
-  }catch(e){
-    showMessage("toolMessage","Save failed: "+e.message,"bad");
-  }finally{
-    $("addToolBtn").disabled=false;
-  }
+  }catch(e){showMessage("toolMessage","Save failed: "+e.message,"bad");}
+  finally{$("addToolBtn").disabled=false;}
 };
 
 // MANAGE TOOLS
 $("refreshToolsBtn").onclick=loadTools;
-
 async function loadTools(){
   const box=$("toolsList");
   box.textContent="Loading tools...";
-
-  const {data,error}=await supabaseClient.from("tools")
-    .select("*").order("id",{ascending:false});
-
+  const {data,error}=await supabaseClient.from("tools").select("*").order("id",{ascending:false});
   if(error){box.textContent=error.message;return;}
   box.textContent="";
-
   if(!data?.length){box.textContent="No tools found.";return;}
-
   data.forEach(tool=>{
-    const item=document.createElement("div");
-    item.className="result";
-
+    const item=document.createElement("div");item.className="result";
     if(tool.image_url){
-      const img=document.createElement("img");
-      img.className="tool-photo";
-      img.src=tool.image_url;
-      img.alt=tool.name+" photo";
-      img.onerror=()=>{img.style.display="none";};
-      item.appendChild(img);
+      const img=document.createElement("img");img.className="tool-photo";
+      img.src=tool.image_url;img.alt=tool.name+" photo";
+      img.onerror=()=>{img.style.display="none";};item.appendChild(img);
     }else{
-      const placeholder=document.createElement("div");
-      placeholder.className="photo-placeholder";
-      placeholder.textContent="No Photo";
-      item.appendChild(placeholder);
+      const placeholder=document.createElement("div");placeholder.className="photo-placeholder";
+      placeholder.textContent="No Photo";item.appendChild(placeholder);
     }
-
     addText(item,"h3",tool.name);
     addText(item,"p","Category: "+(tool.category||"N/A"));
     addText(item,"p","INR: ₹"+(tool.price_inr??0)+" | USD: $"+(tool.price_usd??0));
     addText(item,"p","Status: "+(tool.is_active?"Active":"Inactive"));
-
     const photoInput=document.createElement("input");
-    photoInput.type="file";
-    photoInput.accept="image/png,image/jpeg,image/webp";
-    photoInput.style.display="none";
-
+    photoInput.type="file";photoInput.accept="image/png,image/jpeg,image/webp";photoInput.style.display="none";
     const photoBtn=document.createElement("button");
-    photoBtn.className="small success";
-    photoBtn.textContent=tool.image_url?"Change Photo":"Upload Photo";
-
+    photoBtn.className="small success";photoBtn.textContent=tool.image_url?"Change Photo":"Upload Photo";
     photoBtn.onclick=()=>photoInput.click();
-
     photoInput.onchange=async()=>{
-      const file=photoInput.files[0];
-      if(!file)return;
-
-      const validation=validPhoto(file);
-      if(validation){alert(validation);photoInput.value="";return;}
-
-      photoBtn.disabled=true;
-      photoBtn.textContent="Uploading...";
-
+      const file=photoInput.files[0];if(!file)return;
+      const validation=validPhoto(file);if(validation){alert(validation);photoInput.value="";return;}
+      photoBtn.disabled=true;photoBtn.textContent="Uploading...";
       try{
         const imageUrl=await uploadToolPhoto(file);
-        const {error}=await supabaseClient.from("tools")
-          .update({image_url:imageUrl}).eq("id",tool.id);
-
+        const {error}=await supabaseClient.from("tools").update({image_url:imageUrl}).eq("id",tool.id);
         if(error)throw error;
-
-        alert("Tool photo updated successfully.");
-        loadTools();
-      }catch(e){
-        alert("Photo upload failed: "+e.message);
-        photoBtn.disabled=false;
-        photoBtn.textContent=tool.image_url?"Change Photo":"Upload Photo";
-      }
+        alert("Tool photo updated successfully.");loadTools();
+      }catch(e){alert("Photo upload failed: "+e.message);photoBtn.disabled=false;photoBtn.textContent=tool.image_url?"Change Photo":"Upload Photo";}
     };
-
     const priceBtn=document.createElement("button");
-    priceBtn.className="small";
-    priceBtn.textContent="Edit Price";
+    priceBtn.className="small";priceBtn.textContent="Edit Price";
     priceBtn.onclick=async()=>{
-      const a=prompt("New INR price",tool.price_inr);
-      if(a===null)return;
-      const b=prompt("New USD price",tool.price_usd);
-      if(b===null)return;
-      if(a.trim()===""||b.trim()===""||!Number.isFinite(Number(a))||!Number.isFinite(Number(b))||Number(a)<0||Number(b)<0){
-        alert("Enter valid prices.");return;
-      }
-      const {error}=await supabaseClient.from("tools").update({
-        price_inr:Number(a),price_usd:Number(b)
-      }).eq("id",tool.id);
+      const a=prompt("New INR price",tool.price_inr);if(a===null)return;
+      const b=prompt("New USD price",tool.price_usd);if(b===null)return;
+      if(a.trim()===""||b.trim()===""||!Number.isFinite(Number(a))||!Number.isFinite(Number(b))||Number(a)<0||Number(b)<0){alert("Enter valid prices.");return;}
+      const {error}=await supabaseClient.from("tools").update({price_inr:Number(a),price_usd:Number(b)}).eq("id",tool.id);
       if(error)alert(error.message);else loadTools();
     };
-
     const toggle=document.createElement("button");
-    toggle.className="small secondary";
-    toggle.textContent=tool.is_active?"Deactivate":"Activate";
+    toggle.className="small secondary";toggle.textContent=tool.is_active?"Deactivate":"Activate";
     toggle.onclick=async()=>{
-      const {error}=await supabaseClient.from("tools")
-        .update({is_active:!tool.is_active}).eq("id",tool.id);
+      const {error}=await supabaseClient.from("tools").update({is_active:!tool.is_active}).eq("id",tool.id);
       if(error)alert(error.message);else loadTools();
     };
-
     const del=document.createElement("button");
-    del.className="small danger";
-    del.textContent="Delete";
+    del.className="small danger";del.textContent="Delete";
     del.onclick=async()=>{
       if(!confirm("Permanently delete "+tool.name+"?"))return;
       const {error}=await supabaseClient.from("tools").delete().eq("id",tool.id);
       if(error)alert(error.message);else loadTools();
     };
-
     item.append(photoBtn,photoInput,priceBtn,toggle,del);
     box.appendChild(item);
   });
 }
 
-// ORDERS
+// ORDERS MANAGEMENT
 $("refreshOrdersBtn").onclick=loadOrders;
+
+function displayOrderDetails(details){
+  if(!details)return "No customer details";
+  if(typeof details==="string")return details;
+  try{return JSON.stringify(details,null,2);}catch(e){return String(details);}
+}
+
+function orderStatusClass(status){
+  const s=String(status||"").toLowerCase();
+  if(s==="failed")return "status failed";
+  if(s==="done")return "status done";
+  if(s==="processing")return "status processing";
+  return "status";
+}
 
 async function loadOrders(){
   const box=$("ordersList");
   box.textContent="Loading orders...";
+  showMessage("ordersMessage","");
   const {data,error}=await supabaseClient.from("orders")
     .select("*").order("id",{ascending:false}).limit(100);
-  if(error){box.textContent=error.message;return;}
+  if(error){
+    box.textContent="Could not load orders: "+error.message;
+    showMessage("ordersMessage",error.message,"bad");
+    return;
+  }
   box.textContent="";
   if(!data?.length){box.textContent="No orders found.";return;}
+
   data.forEach(order=>{
     const item=document.createElement("div");
     item.className="result";
-    addText(item,"h3","Order #"+order.id);
+
+    addText(item,"h3","Order #"+order.id+(order.order_code?" | "+order.order_code:""));
     addText(item,"p","Customer: "+(order.customer_name||order.customer_email||"N/A"));
+    addText(item,"p","Customer Email: "+(order.customer_email||"N/A"));
+    addText(item,"p","Customer ID: "+(order.customer_code||"N/A"));
     addText(item,"p","Tool: "+(order.tool_name||"N/A"));
-    addText(item,"p","Amount: "+(order.currency||"")+" "+(order.amount??0));
-    addText(item,"p","Status: "+(order.status||"N/A"));
+    addText(item,"p","Amount: "+(order.currency||"INR")+" "+(order.amount??0));
+    addText(item,"p","Payment: "+(order.payment_status||"N/A"));
+    const status=addText(item,"span",order.status||"Pending");
+    status.className=orderStatusClass(order.status);
+    addText(item,"p","Refund: "+(order.refund_status||"Not refunded"));
+    addText(item,"p","Created: "+(order.created_at?new Date(order.created_at).toLocaleString():"N/A"));
+
+    const detailHeading=addText(item,"b","Customer Order Details");
+    detailHeading.style.display="block";
+    const details=document.createElement("div");
+    details.className="order-details";
+    details.textContent=displayOrderDetails(order.order_details||order.required_data);
+    item.appendChild(details);
+
+    const statusLabel=addText(item,"label","Update Order Status");
+    statusLabel.className="field-label";
+    const statusSelect=document.createElement("select");
+    ["Pending","Processing","Done","Failed"].forEach(value=>{
+      const option=document.createElement("option");
+      option.value=value;option.textContent=value;
+      statusSelect.appendChild(option);
+    });
+    statusSelect.value=["Pending","Processing","Done","Failed"].includes(order.status)?order.status:"Pending";
+    item.appendChild(statusSelect);
+
+    const resultLabel=addText(item,"label","Result / Delivery Details");
+    resultLabel.className="field-label";
+    const resultInput=document.createElement("textarea");
+    resultInput.placeholder="Enter result, delivery information or customer instructions";
+    resultInput.value=order.result||"";
+    item.appendChild(resultInput);
+
+    const supplierLabel=addText(item,"label","Supplier Reference");
+    supplierLabel.className="field-label";
+    const supplierInput=document.createElement("input");
+    supplierInput.placeholder="Supplier reference (optional)";
+    supplierInput.value=order.supplier_reference||"";
+    item.appendChild(supplierInput);
+
+    const save=document.createElement("button");
+    save.className="action";
+    save.textContent="SAVE ORDER UPDATE";
+    save.onclick=async()=>{
+      const newStatus=statusSelect.value;
+      if(newStatus==="Failed"&&order.status!=="Failed"){
+        if(!confirm("Mark this order as FAILED? The system will attempt to refund the customer wallet."))return;
+      }else if(!confirm("Save order #"+order.id+" as "+newStatus+"?"))return;
+
+      save.disabled=true;
+      save.textContent="Saving...";
+      try{
+        const {data,error}=await supabaseClient.rpc("rk_admin_update_order",{
+          p_order_id:order.id,
+          p_status:newStatus,
+          p_result:resultInput.value.trim()||null,
+          p_supplier_reference:supplierInput.value.trim()||null
+        });
+        if(error)throw error;
+        showMessage("ordersMessage","Order #"+order.id+" updated successfully.","good");
+        await loadOrders();
+      }catch(e){
+        showMessage("ordersMessage","Order update failed: "+e.message,"bad");
+        save.disabled=false;
+        save.textContent="SAVE ORDER UPDATE";
+      }
+    };
+    item.appendChild(save);
     box.appendChild(item);
   });
 }
@@ -802,19 +800,15 @@ const settingFields={
 function setSettingValue(key,value){
   const el=$(settingFields[key]);
   if(!el)return;
-  if(el.type==="checkbox"){
-    el.checked=value===true||value==="true";
-  }else{
-    el.value=value==null?"":String(value);
-  }
+  if(el.type==="checkbox")el.checked=value===true||value==="true";
+  else el.value=value==null?"":String(value);
 }
 
 async function loadSettings(){
   showMessage("settingsMessage","Loading website settings...");
   $("loadSettingsBtn").disabled=true;
   try{
-    const {data,error}=await supabaseClient.from("rk_website_settings")
-      .select("setting_key,setting_value");
+    const {data,error}=await supabaseClient.from("rk_website_settings").select("setting_key,setting_value");
     if(error)throw error;
     (data||[]).forEach(row=>setSettingValue(row.setting_key,row.setting_value));
     showMessage("settingsMessage","Settings loaded successfully.","good");
@@ -835,21 +829,16 @@ $("saveSettingsBtn").onclick=async()=>{
     currency_mode:$("settingCurrency").value,
     maintenance_mode:$("settingMaintenance").checked
   };
-
   if(!values.site_name){
     showMessage("settingsMessage","Website Name is required.","bad");return;
   }
-
   const rows=Object.entries(values).map(([key,value])=>({
     setting_key:key,setting_value:value,updated_at:new Date().toISOString()
   }));
-
   $("saveSettingsBtn").disabled=true;
   showMessage("settingsMessage","Saving settings...");
-
   try{
-    const {error}=await supabaseClient.from("rk_website_settings")
-      .upsert(rows,{onConflict:"setting_key"});
+    const {error}=await supabaseClient.from("rk_website_settings").upsert(rows,{onConflict:"setting_key"});
     if(error)throw error;
     showMessage("settingsMessage","Website settings saved successfully.","good");
   }catch(e){
