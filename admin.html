@@ -46,6 +46,7 @@ label.check input{width:auto;margin:0}
 .search-row input{flex:1;min-width:0}
 .search-row button{width:auto;white-space:nowrap}
 .overlay{display:none}
+.field-label{display:block;color:#ff922e;margin-top:12px;font-size:14px;font-weight:bold}
 @media(max-width:760px){
 .sidebar{position:fixed;z-index:40;top:62px;bottom:0;left:0;width:280px;max-width:85vw;transform:translateX(-110%);transition:transform .2s;overflow-y:auto}
 .sidebar.open{transform:translateX(0)}
@@ -61,7 +62,6 @@ label.check input{width:auto;margin:0}
 </style>
 </head>
 <body>
-
 <header class="topbar">
 <button class="menu-btn" id="menuBtn">☰</button>
 <div class="brand">RK SOFTWARE ADMIN</div>
@@ -92,12 +92,9 @@ label.check input{width:auto;margin:0}
 <button class="nav-item" data-page="settings">Website Settings</button>
 <button class="nav-item" id="logoutBtn">Logout</button>
 </aside>
-
 <div class="overlay" id="overlay"></div>
 
 <main class="content">
-
-<!-- DASHBOARD: ONLY WALLET -->
 <section class="page active" id="page-dashboard">
 <div class="card">
 <h2>Customer Wallet Management</h2>
@@ -108,7 +105,6 @@ label.check input{width:auto;margin:0}
 <p id="walletSearchMessage" class="message"></p>
 <div id="walletSearchResults"></div>
 </div>
-
 <div class="card" id="walletCustomerCard" style="display:none">
 <h2>Customer Wallet</h2>
 <p id="walletCustomerInfo"></p>
@@ -126,7 +122,6 @@ label.check input{width:auto;margin:0}
 </div>
 </section>
 
-<!-- CUSTOMERS -->
 <section class="page" id="page-customers">
 <div class="card">
 <h2>Customer Management</h2>
@@ -140,7 +135,6 @@ label.check input{width:auto;margin:0}
 </div>
 </section>
 
-<!-- ADD TOOL -->
 <section class="page" id="page-addTool">
 <div class="card">
 <h2>Add New Tool</h2>
@@ -170,7 +164,6 @@ label.check input{width:auto;margin:0}
 </div>
 </section>
 
-<!-- MANAGE TOOLS -->
 <section class="page" id="page-manageTools">
 <div class="card">
 <h2>Manage Tools</h2>
@@ -179,7 +172,6 @@ label.check input{width:auto;margin:0}
 </div>
 </section>
 
-<!-- ORDERS -->
 <section class="page" id="page-orders">
 <div class="card">
 <h2>Orders Management</h2>
@@ -188,16 +180,48 @@ label.check input{width:auto;margin:0}
 </div>
 </section>
 
-<!-- SETTINGS -->
 <section class="page" id="page-settings">
 <div class="card">
 <h2>Website Settings</h2>
-<p>RK SOFTWARE Admin Panel</p>
-<p class="muted">Website settings options can be added here in the next update.</p>
+<p class="muted">Manage your website information from here.</p>
+
+<label class="field-label" for="settingSiteName">Website Name</label>
+<input id="settingSiteName" placeholder="RK SOFTWARE">
+
+<label class="field-label" for="settingLogoUrl">Logo Image URL</label>
+<input id="settingLogoUrl" placeholder="https://example.com/logo.png">
+
+<label class="field-label" for="settingWhatsapp">WhatsApp Number</label>
+<input id="settingWhatsapp" placeholder="91XXXXXXXXXX">
+
+<label class="field-label" for="settingContactEmail">Contact Email</label>
+<input id="settingContactEmail" type="email" placeholder="support@example.com">
+
+<label class="field-label" for="settingUpi">UPI ID</label>
+<input id="settingUpi" placeholder="yourname@upi">
+
+<label class="field-label" for="settingQrUrl">Payment QR Image URL</label>
+<input id="settingQrUrl" placeholder="https://example.com/payment-qr.png">
+
+<label class="field-label" for="settingCurrency">Website Currency</label>
+<select id="settingCurrency">
+<option value="INR">INR (₹)</option>
+<option value="USD">USD ($)</option>
+</select>
+
+<label class="check">
+<input type="checkbox" id="settingMaintenance">
+Maintenance Mode ON
+</label>
+
+<p class="muted">Logo and QR image upload will be added later. For now, you can enter image URLs.</p>
+<button class="action" id="loadSettingsBtn">Refresh Settings</button>
+<button class="action success" id="saveSettingsBtn">SAVE WEBSITE SETTINGS</button>
+<p id="settingsMessage" class="message"></p>
+<hr style="border-color:#444;margin:20px 0">
 <button class="action danger" id="settingsLogoutBtn">Logout</button>
 </div>
 </section>
-
 </main>
 </div>
 </div>
@@ -237,15 +261,14 @@ function showPage(name){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   const page=$("page-"+name);
   if(page)page.classList.add("active");
-
   document.querySelectorAll(".nav-item[data-page]").forEach(b=>{
     b.classList.toggle("active",b.dataset.page===name);
   });
   closeMenu();
-
   if(name==="customers")loadCustomers();
   if(name==="manageTools")loadTools();
   if(name==="orders")loadOrders();
+  if(name==="settings")loadSettings();
 }
 document.querySelectorAll(".nav-item[data-page]").forEach(btn=>{
   btn.addEventListener("click",()=>showPage(btn.dataset.page));
@@ -322,11 +345,8 @@ async function findCustomer(term){
   if(!value)return {data:[],error:null};
   let query=supabaseClient.from("rk_customer_profiles")
     .select("user_id,customer_id,full_name,email,currency,is_blocked");
-  if(value.includes("@")){
-    query=query.ilike("email","%"+value+"%");
-  }else{
-    query=query.ilike("customer_id","%"+value+"%");
-  }
+  if(value.includes("@"))query=query.ilike("email","%"+value+"%");
+  else query=query.ilike("customer_id","%"+value+"%");
   return await query.limit(20);
 }
 
@@ -340,13 +360,9 @@ async function walletSearch(){
     return;
   }
   const {data,error}=await findCustomer(term);
-  if(error){
-    showMessage("walletSearchMessage",error.message,"bad");
-    return;
-  }
+  if(error){showMessage("walletSearchMessage",error.message,"bad");return;}
   if(!data?.length){
-    showMessage("walletSearchMessage","Customer not found.","bad");
-    return;
+    showMessage("walletSearchMessage","Customer not found.","bad");return;
   }
   showMessage("walletSearchMessage","Select a customer.");
   for(const customer of data){
@@ -370,9 +386,7 @@ $("walletSearch").addEventListener("keydown",e=>{
 async function selectWalletCustomer(customer){
   selectedCustomer=customer;
   $("walletCustomerCard").style.display="block";
-  $("walletCustomerInfo").textContent=
-    (customer.full_name||"Customer")+" | "+
-    customer.customer_id+" | "+customer.email;
+  $("walletCustomerInfo").textContent=(customer.full_name||"Customer")+" | "+customer.customer_id+" | "+customer.email;
   $("walletBalance").textContent="Loading...";
   $("walletHistory").textContent="Loading...";
   showMessage("walletActionMessage","");
@@ -383,16 +397,13 @@ async function selectWalletCustomer(customer){
 async function refreshWallet(){
   if(!selectedCustomer)return;
   const {data,error}=await supabaseClient.from("rk_wallet_accounts")
-    .select("balance,currency")
-    .eq("user_id",selectedCustomer.user_id).maybeSingle();
+    .select("balance,currency").eq("user_id",selectedCustomer.user_id).maybeSingle();
   if(error){
     $("walletBalance").textContent="Wallet error";
     showMessage("walletActionMessage",error.message,"bad");
     return;
   }
-  $("walletBalance").textContent=formatMoney(
-    data?.balance||0,data?.currency||selectedCustomer.currency
-  );
+  $("walletBalance").textContent=formatMoney(data?.balance||0,data?.currency||selectedCustomer.currency);
   return data;
 }
 
@@ -424,15 +435,12 @@ $("walletApplyBtn").onclick=async()=>{
     showMessage("walletActionMessage","Enter a valid amount.","bad");return;
   }
   if(!confirm((action==="credit"?"Add ":"Deduct ")+amount+" for "+selectedCustomer.email+"?"))return;
-
   $("walletApplyBtn").disabled=true;
   showMessage("walletActionMessage","Processing...");
   try{
     const {data,error}=await supabaseClient.rpc("rk_admin_adjust_wallet",{
-      p_user_id:selectedCustomer.user_id,
-      p_amount:amount,
-      p_action:action,
-      p_description:description||null
+      p_user_id:selectedCustomer.user_id,p_amount:amount,
+      p_action:action,p_description:description||null
     });
     if(error)throw error;
     await refreshWallet();
@@ -442,9 +450,7 @@ $("walletApplyBtn").onclick=async()=>{
     showMessage("walletActionMessage","Wallet updated successfully.","good");
   }catch(e){
     showMessage("walletActionMessage",e.message,"bad");
-  }finally{
-    $("walletApplyBtn").disabled=false;
-  }
+  }finally{$("walletApplyBtn").disabled=false;}
 };
 
 // CUSTOMER MANAGEMENT
@@ -500,10 +506,7 @@ async function toggleCustomerBlock(customer){
   if(!confirm((next?"Block ":"Unblock ")+customer.email+"?"))return;
   const {error}=await supabaseClient.from("rk_customer_profiles")
     .update({is_blocked:next}).eq("user_id",customer.user_id);
-  if(error){
-    alert("Update failed: "+error.message);
-    return;
-  }
+  if(error){alert("Update failed: "+error.message);return;}
   alert(next?"Customer blocked.":"Customer unblocked.");
   loadCustomers();
 }
@@ -526,7 +529,6 @@ $("addToolBtn").onclick=async()=>{
   const serviceType=category==="Tool Rental"?"rental":
     category==="File Services"?"file":
     category==="Home Tools"?"home":"server";
-
   $("addToolBtn").disabled=true;
   showMessage("toolMessage","Saving...");
   try{
@@ -549,11 +551,8 @@ $("addToolBtn").onclick=async()=>{
     $("toolCategory").value="";
     ["otpEnabled","creditEnabled","quantityEnabled","usernameRequired","gmailRequired"].forEach(id=>$(id).checked=false);
     $("minQuantity").value="1";$("maxQuantity").value="1";
-  }catch(e){
-    showMessage("toolMessage",e.message,"bad");
-  }finally{
-    $("addToolBtn").disabled=false;
-  }
+  }catch(e){showMessage("toolMessage",e.message,"bad");}
+  finally{$("addToolBtn").disabled=false;}
 };
 
 // MANAGE TOOLS
@@ -631,6 +630,72 @@ async function loadOrders(){
     box.appendChild(item);
   });
 }
+
+// WEBSITE SETTINGS
+const settingFields={
+  site_name:"settingSiteName",
+  logo_url:"settingLogoUrl",
+  whatsapp_number:"settingWhatsapp",
+  contact_email:"settingContactEmail",
+  upi_id:"settingUpi",
+  payment_qr_url:"settingQrUrl",
+  currency_mode:"settingCurrency",
+  maintenance_mode:"settingMaintenance"
+};
+
+function setSettingValue(key,value){
+  const el=$(settingFields[key]);
+  if(!el)return;
+  if(el.type==="checkbox"){
+    el.checked=value===true||value==="true";
+  }else{
+    el.value=value==null?"":String(value);
+  }
+}
+
+async function loadSettings(){
+  showMessage("settingsMessage","Loading website settings...");
+  $("loadSettingsBtn").disabled=true;
+  try{
+    const {data,error}=await supabaseClient.from("rk_website_settings")
+      .select("setting_key,setting_value");
+    if(error)throw error;
+    (data||[]).forEach(row=>setSettingValue(row.setting_key,row.setting_value));
+    showMessage("settingsMessage","Settings loaded successfully.","good");
+  }catch(e){
+    showMessage("settingsMessage","Could not load settings: "+e.message,"bad");
+  }finally{$("loadSettingsBtn").disabled=false;}
+}
+$("loadSettingsBtn").onclick=loadSettings;
+
+$("saveSettingsBtn").onclick=async()=>{
+  const values={
+    site_name:$("settingSiteName").value.trim(),
+    logo_url:$("settingLogoUrl").value.trim(),
+    whatsapp_number:$("settingWhatsapp").value.trim(),
+    contact_email:$("settingContactEmail").value.trim(),
+    upi_id:$("settingUpi").value.trim(),
+    payment_qr_url:$("settingQrUrl").value.trim(),
+    currency_mode:$("settingCurrency").value,
+    maintenance_mode:$("settingMaintenance").checked
+  };
+  if(!values.site_name){
+    showMessage("settingsMessage","Website Name is required.","bad");return;
+  }
+  const rows=Object.entries(values).map(([key,value])=>({
+    setting_key:key,setting_value:value,updated_at:new Date().toISOString()
+  }));
+  $("saveSettingsBtn").disabled=true;
+  showMessage("settingsMessage","Saving settings...");
+  try{
+    const {error}=await supabaseClient.from("rk_website_settings")
+      .upsert(rows,{onConflict:"setting_key"});
+    if(error)throw error;
+    showMessage("settingsMessage","Website settings saved successfully.","good");
+  }catch(e){
+    showMessage("settingsMessage","Save failed: "+e.message,"bad");
+  }finally{$("saveSettingsBtn").disabled=false;}
+};
 </script>
 </body>
 </html>
